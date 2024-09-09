@@ -104,7 +104,7 @@ MainWindow::MainWindow()
     const auto halfWidth = static_cast<int>(QWidget::width() / 2.0);
     splitter->setSizes({halfWidth, halfWidth});
 
-    setupGUI();
+    setupGUI(Keys | StatusBar | Save | Create);
 
     // Steal KTextEditor::View's StatusBar
     statusBar()->setSizeGripEnabled(false);
@@ -119,6 +119,9 @@ MainWindow::MainWindow()
 
     // TODO: save state
     action(KStandardAction::name(KStandardAction::ShowStatusbar))->setChecked(false);
+
+    // We don't provide a handbook
+    action(KStandardAction::name(KStandardAction::HelpContents))->setVisible(false);
 }
 
 #include "moc_mainwindow.cpp"
