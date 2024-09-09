@@ -11,7 +11,7 @@ find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
 list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Qml QuickWidgets CONFIG REQUIRED)
-find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons XmlGui I18n)
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons XmlGui I18n TextEditor)
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)

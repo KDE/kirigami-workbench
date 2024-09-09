@@ -8,6 +8,7 @@ target_link_libraries(kirigami-workbench
         PRIVATE
         KF6::I18n
         KF6::XmlGui
+        KF6::TextEditor
         Qt6::Core
         Qt6::Widgets
         Qt6::Qml

@@ -1,5 +1,9 @@
 #include "mainwindow.h"
 
+#include <KTextEditor/Document>
+#include <KTextEditor/Editor>
+#include <KTextEditor/View>
+
 #include <QHBoxLayout>
 #include <QTemporaryFile>
 #include <QTextEdit>
@@ -15,16 +19,17 @@ MainWindow::MainWindow()
 
     m_quickWidget = new QQuickWidget();
 
-    auto textEdit = new QTextEdit();
-    connect(textEdit, &QTextEdit::textChanged, this, [this, textEdit] {
+    auto editor = KTextEditor::Editor::instance();
+    auto doc = editor->createDocument(this);
+    connect(doc, &KTextEditor::Document::textChanged, this, [this](KTextEditor::Document *doc) {
         QTemporaryFile qmlWorkFile;
         qmlWorkFile.open();
-        qmlWorkFile.write(textEdit->document()->toPlainText().toUtf8());
+        qmlWorkFile.write(doc->text().toUtf8());
         qmlWorkFile.close();
 
         m_quickWidget->setSource(QUrl{qmlWorkFile.fileName()});
     });
-    textEdit->setText(
+    doc->setText(
         QStringLiteral("import QtQuick 2.15\n"
                        "\n"
                        "Rectangle {\n"
@@ -32,7 +37,9 @@ MainWindow::MainWindow()
                        "    width: 100\n"
                        "    height: 100\n"
                        "}"));
-    layout->addWidget(textEdit);
+    auto view = doc->createView(this);
+
+    layout->addWidget(view);
     layout->addWidget(m_quickWidget);
 
     setupGUI();
