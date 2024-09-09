@@ -87,6 +87,8 @@ MainWindow::MainWindow()
 
     splitter->addWidget(m_view);
     splitter->addWidget(m_quickWidget);
+    const auto halfWidth = static_cast<int>(QWidget::width() / 2.0);
+    splitter->setSizes({halfWidth, halfWidth});
 
     // Steal KTextEditor::View's StatusBar
     statusBar()->setSizeGripEnabled(false);
