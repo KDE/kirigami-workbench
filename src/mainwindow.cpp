@@ -15,6 +15,8 @@
 #include <KTextEditor/SessionConfigInterface>
 #include <KTextEditor/View>
 
+#include <KLocalizedString>
+#include <KStandardAction>
 #include <QMenu>
 #include <QQmlEngine>
 #include <QSplitter>
@@ -100,8 +102,11 @@ MainWindow::MainWindow()
     const auto halfWidth = static_cast<int>(QWidget::width() / 2.0);
     splitter->setSizes({halfWidth, halfWidth});
 
+    setupGUI();
+
     // Steal KTextEditor::View's StatusBar
     statusBar()->setSizeGripEnabled(false);
+    statusBar()->hide();
     const auto widgets = m_view->findChildren<QWidget *>(QString(), Qt::FindChildrenRecursively);
     for (auto *widget : widgets) {
         if (widget && widget->metaObject()->className() == QByteArrayLiteral("KateStatusBar")) {
@@ -110,7 +115,8 @@ MainWindow::MainWindow()
         }
     }
 
-    setupGUI();
+    // TODO: save state
+    action(KStandardAction::name(KStandardAction::ShowStatusbar))->setChecked(false);
 }
 
 #include "moc_mainwindow.cpp"
