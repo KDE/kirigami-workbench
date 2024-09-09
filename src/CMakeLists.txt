@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Joshua Goins <josh@redstrate.com>
+# SPDX-License-Identifier: CC0-1.0
+
 add_executable(kirigami-workbench)
 target_sources(kirigami-workbench PRIVATE
         main.cpp

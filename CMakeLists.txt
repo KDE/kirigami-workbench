@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Joshua Goins <josh@redstrate.com>
+# SPDX-License-Identifier: CC0-1.0
+
 cmake_minimum_required(VERSION 3.25)
 project(KirigamiWorkbench VERSION 0.1 LANGUAGES CXX)
 
