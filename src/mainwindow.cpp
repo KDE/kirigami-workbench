@@ -15,6 +15,7 @@
 #include <KTextEditor/SessionConfigInterface>
 #include <KTextEditor/View>
 
+#include <QMenu>
 #include <QQmlEngine>
 #include <QSplitter>
 #include <QStatusBar>
@@ -60,6 +61,11 @@ MainWindow::MainWindow()
     m_document->openUrl(QUrl::fromLocalFile(m_qmlWorkFile.fileName()));
 
     m_view = m_document->createView(this);
+
+    // Add the default context menu
+    auto contextMenu = new QMenu();
+    m_view->defaultContextMenu(contextMenu);
+    m_view->setContextMenu(contextMenu);
 
     // Load the LSP plugin
     const QStringList pluginsToLoad = QStringList() << QStringLiteral("lspclientplugin");
