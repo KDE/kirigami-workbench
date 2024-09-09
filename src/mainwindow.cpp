@@ -61,6 +61,10 @@ MainWindow::MainWindow()
     m_document->openUrl(QUrl::fromLocalFile(m_qmlWorkFile.fileName()));
 
     m_view = m_document->createView(this);
+    m_view->setConfigValue(QStringLiteral("modification-markers"), false);
+    m_view->setConfigValue(QStringLiteral("icon-bar"), false);
+    m_view->setConfigValue(QStringLiteral("allow-mark-menu"), false);
+    m_view->setConfigValue(QStringLiteral("word-count"), false);
 
     // Add the default context menu
     auto contextMenu = new QMenu();
