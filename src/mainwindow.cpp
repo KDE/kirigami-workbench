@@ -37,6 +37,7 @@ MainWindow::MainWindow()
     setCentralWidget(splitter);
 
     m_quickWidget = new QQuickWidget();
+    m_quickWidget->setResizeMode(QQuickWidget::ResizeMode::SizeRootObjectToView);
 
     m_application = new KTextEditor::Application(this);
     m_mainWindow = new KTextEditor::MainWindow(this);
@@ -57,7 +58,6 @@ MainWindow::MainWindow()
     m_doc->openUrl(QUrl::fromLocalFile(qmlWorkFile.fileName()));
 
     m_view = m_doc->createView(this);
-    qInfo() << m_view->configKeys();
 
     // Load the LSP plugin
     const QStringList pluginsToLoad = QStringList() << QStringLiteral("lspclientplugin");
