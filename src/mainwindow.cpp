@@ -29,6 +29,7 @@ MainWindow::MainWindow()
 
         m_quickWidget->setSource(QUrl{qmlWorkFile.fileName()});
     });
+    doc->setHighlightingMode(QStringLiteral("qml"));
     doc->setText(
         QStringLiteral("import QtQuick 2.15\n"
                        "\n"
