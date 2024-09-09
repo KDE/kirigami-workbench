@@ -43,6 +43,7 @@ MainWindow::MainWindow()
 
     m_quickWidget = new QQuickWidget();
     m_quickWidget->setResizeMode(QQuickWidget::ResizeMode::SizeRootObjectToView);
+    m_quickWidget->setWhatsThis(i18n("This is a live and interactive preview of the QML written in the text editor."));
 
     m_application = new KTextEditor::Application(this);
     m_mainWindow = new KTextEditor::MainWindow(this);
@@ -63,6 +64,7 @@ MainWindow::MainWindow()
     m_document->openUrl(QUrl::fromLocalFile(m_qmlWorkFile.fileName()));
 
     m_view = m_document->createView(this);
+    m_view->setWhatsThis(i18n("This is a text editor, to write QML code inside. The code is automatically saved and displayed in a live preview."));
     m_view->setConfigValue(QStringLiteral("modification-markers"), false);
     m_view->setConfigValue(QStringLiteral("icon-bar"), false);
     m_view->setConfigValue(QStringLiteral("allow-mark-menu"), false);
