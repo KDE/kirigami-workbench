@@ -45,6 +45,8 @@ MainWindow::MainWindow()
     KTextEditor::Editor::instance()->setApplication(m_application);
 
     m_doc = editor->createDocument(this);
+    m_doc->setConfigValue(QStringLiteral("keep-extra-spaces"), true);
+    m_doc->setConfigValue(QStringLiteral("remove-spaces"), 0);
     connect(m_doc, &KTextEditor::Document::textChanged, this, [this](KTextEditor::Document *doc) {
         doc->save();
 
@@ -55,6 +57,7 @@ MainWindow::MainWindow()
     m_doc->openUrl(QUrl::fromLocalFile(qmlWorkFile.fileName()));
 
     m_view = m_doc->createView(this);
+    qInfo() << m_view->configKeys();
 
     // Load the LSP plugin
     const QStringList pluginsToLoad = QStringList() << QStringLiteral("lspclientplugin");
