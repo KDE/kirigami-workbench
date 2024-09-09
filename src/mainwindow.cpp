@@ -19,14 +19,13 @@
 #include <QSplitter>
 #include <QStatusBar>
 #include <QThread>
-#include <QToolTip>
 
 MainWindow::MainWindow()
     : KXmlGuiWindow()
-    , qmlWorkFile(QStringLiteral("XXXXXX.qml"))
+    , m_qmlWorkFile(QStringLiteral("XXXXXX.qml"))
 {
-    qmlWorkFile.open();
-    qmlWorkFile.write(
+    m_qmlWorkFile.open();
+    m_qmlWorkFile.write(
         QByteArrayLiteral("import QtQuick 2.15\n"
                           "\n"
                           "Rectangle {\n"
@@ -34,7 +33,7 @@ MainWindow::MainWindow()
                           "    width: 100\n"
                           "    height: 100\n"
                           "}"));
-    qmlWorkFile.close();
+    m_qmlWorkFile.close();
 
     auto splitter = new QSplitter();
     setCentralWidget(splitter);
@@ -48,19 +47,19 @@ MainWindow::MainWindow()
     auto editor = KTextEditor::Editor::instance();
     KTextEditor::Editor::instance()->setApplication(m_application);
 
-    m_doc = editor->createDocument(this);
-    m_doc->setConfigValue(QStringLiteral("keep-extra-spaces"), true);
-    m_doc->setConfigValue(QStringLiteral("remove-spaces"), 0);
-    connect(m_doc, &KTextEditor::Document::textChanged, this, [this](KTextEditor::Document *doc) {
+    m_document = editor->createDocument(this);
+    m_document->setConfigValue(QStringLiteral("keep-extra-spaces"), true);
+    m_document->setConfigValue(QStringLiteral("remove-spaces"), 0);
+    connect(m_document, &KTextEditor::Document::textChanged, this, [this](KTextEditor::Document *doc) {
         doc->save();
 
         m_quickWidget->engine()->clearComponentCache(); // Needed to make sure the engine doesn't cache our temporary file
-        m_quickWidget->setSource(QUrl::fromLocalFile(qmlWorkFile.fileName()));
+        m_quickWidget->setSource(QUrl::fromLocalFile(m_qmlWorkFile.fileName()));
     });
-    m_doc->setHighlightingMode(QStringLiteral("qml"));
-    m_doc->openUrl(QUrl::fromLocalFile(qmlWorkFile.fileName()));
+    m_document->setHighlightingMode(QStringLiteral("qml"));
+    m_document->openUrl(QUrl::fromLocalFile(m_qmlWorkFile.fileName()));
 
-    m_view = m_doc->createView(this);
+    m_view = m_document->createView(this);
 
     // Load the LSP plugin
     const QStringList pluginsToLoad = QStringList() << QStringLiteral("lspclientplugin");

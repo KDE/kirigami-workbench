@@ -66,7 +66,7 @@ public Q_SLOTS:
 
     QVariantMap projectMapForDocument(KTextEditor::Document *)
     {
-        const QFileInfo info(qmlWorkFile.fileName());
+        const QFileInfo info(m_qmlWorkFile.fileName());
         return QJsonObject{{QStringLiteral("lspclient"),
                             QJsonObject{{QStringLiteral("servers"),
                                          QJsonObject{{QStringLiteral("qml"), QJsonObject{{QStringLiteral("root"), info.absoluteDir().absolutePath()}}}}}}}}
@@ -76,7 +76,7 @@ public Q_SLOTS:
     KTextEditor::Document *findUrl(const QUrl &url)
     {
         Q_UNUSED(url)
-        return m_doc;
+        return m_document;
     }
 
 private:
@@ -84,6 +84,6 @@ private:
     KTextEditor::Application *m_application = nullptr;
     KTextEditor::MainWindow *m_mainWindow = nullptr;
     KTextEditor::View *m_view = nullptr;
-    QTemporaryFile qmlWorkFile;
-    KTextEditor::Document *m_doc = nullptr;
+    QTemporaryFile m_qmlWorkFile;
+    KTextEditor::Document *m_document = nullptr;
 };
