@@ -12,8 +12,9 @@
 #include <KTextEditor/SessionConfigInterface>
 #include <KTextEditor/View>
 
-#include <QHBoxLayout>
 #include <QQmlEngine>
+#include <QSplitter>
+#include <QStatusBar>
 #include <QThread>
 #include <QToolTip>
 
@@ -32,11 +33,8 @@ MainWindow::MainWindow()
                           "}"));
     qmlWorkFile.close();
 
-    auto widget = new QWidget();
-    setCentralWidget(widget);
-
-    auto layout = new QHBoxLayout();
-    widget->setLayout(layout);
+    auto splitter = new QSplitter();
+    setCentralWidget(splitter);
 
     m_quickWidget = new QQuickWidget();
 
@@ -57,7 +55,6 @@ MainWindow::MainWindow()
     m_doc->openUrl(QUrl::fromLocalFile(qmlWorkFile.fileName()));
 
     m_view = m_doc->createView(this);
-    m_view->setAnnotationBorderVisible(true);
 
     // Load the LSP plugin
     const QStringList pluginsToLoad = QStringList() << QStringLiteral("lspclientplugin");
@@ -83,8 +80,18 @@ MainWindow::MainWindow()
         }
     }
 
-    layout->addWidget(m_view);
-    layout->addWidget(m_quickWidget);
+    splitter->addWidget(m_view);
+    splitter->addWidget(m_quickWidget);
+
+    // Steal KTextEditor::View's StatusBar
+    statusBar()->setSizeGripEnabled(false);
+    const auto widgets = m_view->findChildren<QWidget *>(QString(), Qt::FindChildrenRecursively);
+    for (auto *widget : widgets) {
+        if (widget && widget->metaObject()->className() == QByteArrayLiteral("KateStatusBar")) {
+            statusBar()->addPermanentWidget(widget);
+            break;
+        }
+    }
 
     setupGUI();
 }
