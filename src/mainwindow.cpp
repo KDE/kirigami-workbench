@@ -100,7 +100,29 @@ MainWindow::MainWindow()
     }
 
     splitter->addWidget(m_view);
-    splitter->addWidget(m_quickWidget);
+
+    auto consoleSplitter = new QSplitter();
+    consoleSplitter->setOrientation(Qt::Vertical);
+    splitter->addWidget(consoleSplitter);
+
+    consoleSplitter->addWidget(m_quickWidget);
+
+    m_consoleWidget = new QTextEdit();
+    m_consoleWidget->setReadOnly(true);
+    m_consoleWidget->setPlaceholderText(i18n("Errors and log output when running the QML will appear here."));
+    connect(m_quickWidget, &QQuickWidget::statusChanged, this, [this](const QQuickWidget::Status status) {
+        QString errorString;
+        for (const auto &error : m_quickWidget->errors()) {
+            errorString.push_back(error.toString());
+        }
+        m_consoleWidget->setText(errorString);
+    });
+    consoleSplitter->addWidget(m_consoleWidget);
+
+    const auto consoleHeight = 100;
+    const auto previewHeight = QWidget::height() - consoleHeight;
+    consoleSplitter->setSizes({previewHeight, consoleHeight});
+
     const auto halfWidth = static_cast<int>(QWidget::width() / 2.0);
     splitter->setSizes({halfWidth, halfWidth});
 

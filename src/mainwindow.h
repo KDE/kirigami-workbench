@@ -11,6 +11,7 @@
 #include <QJsonObject>
 #include <QQuickWidget>
 #include <QTemporaryFile>
+#include <QTextEdit>
 #include <QVBoxLayout>
 
 namespace KTextEditor
@@ -86,4 +87,5 @@ private:
     KTextEditor::View *m_view = nullptr;
     QTemporaryFile m_qmlWorkFile;
     KTextEditor::Document *m_document = nullptr;
+    QTextEdit *m_consoleWidget = nullptr;
 };
