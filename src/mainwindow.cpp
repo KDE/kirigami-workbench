@@ -110,6 +110,7 @@ MainWindow::MainWindow()
     m_consoleWidget = new QTextEdit();
     m_consoleWidget->setReadOnly(true);
     m_consoleWidget->setPlaceholderText(i18n("Errors and log output when running the QML will appear here."));
+    m_consoleWidget->setWhatsThis(m_consoleWidget->placeholderText());
     connect(m_quickWidget, &QQuickWidget::statusChanged, this, [this](const QQuickWidget::Status status) {
         QString errorString;
         for (const auto &error : m_quickWidget->errors()) {
