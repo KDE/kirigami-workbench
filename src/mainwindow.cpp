@@ -29,7 +29,8 @@ MainWindow::MainWindow()
 {
     m_qmlWorkFile.open();
     m_qmlWorkFile.write(
-        QByteArrayLiteral("import QtQuick 2.15\n"
+        QByteArrayLiteral("import QtQuick\n"
+                          "import org.kde.kirigami as Kirigami\n"
                           "\n"
                           "Rectangle {\n"
                           "    color: \"red\"\n"
