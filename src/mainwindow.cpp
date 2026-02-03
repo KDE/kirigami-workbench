@@ -28,15 +28,46 @@ MainWindow::MainWindow()
     , m_qmlWorkFile(QStringLiteral("XXXXXX.qml"))
 {
     m_qmlWorkFile.open();
-    m_qmlWorkFile.write(
-        QByteArrayLiteral("import QtQuick\n"
-                          "import org.kde.kirigami as Kirigami\n"
-                          "\n"
-                          "Rectangle {\n"
-                          "    color: \"red\"\n"
-                          "    width: 100\n"
-                          "    height: 100\n"
-                          "}"));
+    m_qmlWorkFile.write(QByteArrayLiteral(R"(import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls as Controls
+import org.kde.kirigami as Kirigami
+
+Kirigami.ScrollablePage {
+    ColumnLayout {
+        spacing: Kirigami.Units.gridUnit
+        
+        Image {
+            source: "qrc:/assets/kirigami-horizontal.png"
+            fillMode: Image.PreserveAspectFit
+            
+            Layout.fillWidth: true
+            Layout.topMargin: Kirigami.Units.gridUnit * 2
+            Layout.preferredHeight: paintedHeight
+            Layout.alignment: Layout.AlignCenter
+        }
+        
+        Kirigami.Heading {
+            text: "Welcome to Kirigami Workbench"
+            type: Kirigami.Heading.Primary
+            horizontalAlignment: Text.AlignHCenter
+            
+            Layout.fillWidth: true
+        }
+        
+        Controls.Label {
+            text: "Learn how to use Kirigami with an interactive editor."
+            horizontalAlignment: Text.AlignHCenter
+            
+            Layout.fillWidth: true
+        }
+        
+        Item {
+            Layout.fillHeight: true
+        }
+    }
+}
+)"));
     m_qmlWorkFile.close();
 
     auto splitter = new QSplitter();
@@ -60,6 +91,7 @@ MainWindow::MainWindow()
 
         m_quickWidget->engine()->clearComponentCache(); // Needed to make sure the engine doesn't cache our temporary file
         m_quickWidget->setSource(QUrl::fromLocalFile(m_qmlWorkFile.fileName()));
+        qWarning() << m_quickWidget->status();
     });
     m_document->setHighlightingMode(QStringLiteral("qml"));
     m_document->openUrl(QUrl::fromLocalFile(m_qmlWorkFile.fileName()));
