@@ -21,3 +21,5 @@ target_link_libraries(kirigami-workbench PRIVATE
     Qt6::Qml
     Qt6::QuickWidgets
   )
+
+install(TARGETS kirigami-workbench ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
