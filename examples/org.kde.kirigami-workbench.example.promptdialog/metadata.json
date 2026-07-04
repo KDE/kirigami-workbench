@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KirigamiWorkbench/Example",
+    "KPlugin": {
+        "Id": "org.kde.kirigami-workbench.example.promptdialog",
+        "Name": "Prompt Dialog",
+        "Description": "Kirigami.PromptDialog for confirmations and messages, with Success / Warning / Error / Information icon types.",
+        "Category": "Dialogs",
+        "Tags": ["promptdialog", "confirm", "warning", "error", "popup"],
+        "Icon": "dialog-question-symbolic",
+        "License": "GPL-3.0-or-later",
+        "Version": "1"
+    }
+}

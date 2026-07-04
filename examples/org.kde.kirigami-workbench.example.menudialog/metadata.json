@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KirigamiWorkbench/Example",
+    "KPlugin": {
+        "Id": "org.kde.kirigami-workbench.example.menudialog",
+        "Name": "Menu Dialog",
+        "Description": "A Kirigami.MenuDialog showing a list of actions — ideal for context menus on touch and mobile layouts.",
+        "Category": "Dialogs",
+        "Tags": ["menudialog", "menu", "actions", "context", "popup"],
+        "Icon": "overflow-menu-symbolic",
+        "License": "GPL-3.0-or-later",
+        "Version": "1"
+    }
+}

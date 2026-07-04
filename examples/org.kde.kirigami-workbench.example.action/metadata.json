@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KirigamiWorkbench/Example",
+    "KPlugin": {
+        "Id": "org.kde.kirigami-workbench.example.action",
+        "Name": "Action",
+        "Description": "Kirigami.Action with icon, text, onTriggered, and checked state.",
+        "Category": "Controls",
+        "Tags": ["action", "button", "toolbar", "menu"],
+        "Icon": "system-run-symbolic",
+        "License": "GPL-3.0-or-later",
+        "Version": "1"
+    }
+}

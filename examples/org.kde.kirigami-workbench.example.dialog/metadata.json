@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KirigamiWorkbench/Example",
+    "KPlugin": {
+        "Id": "org.kde.kirigami-workbench.example.dialog",
+        "Name": "Dialog",
+        "Description": "A Kirigami.Dialog with scrollable content, standard buttons, and a custom footer action.",
+        "Category": "Dialogs",
+        "Tags": ["dialog", "popup", "overlay", "scrollable"],
+        "Icon": "dialog-information-symbolic",
+        "License": "GPL-3.0-or-later",
+        "Version": "1"
+    }
+}

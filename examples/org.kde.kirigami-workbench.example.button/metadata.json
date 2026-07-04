@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KirigamiWorkbench/Example",
+    "KPlugin": {
+        "Id": "org.kde.kirigami-workbench.example.button",
+        "Name": "Button",
+        "Description": "Standard Button, ToolButton, and flat button variants from QtQuick Controls.",
+        "Category": "Controls",
+        "Tags": ["button", "toolbutton", "controls", "interactive"],
+        "Icon": "input-mouse-symbolic",
+        "License": "GPL-3.0-or-later",
+        "Version": "1"
+    }
+}

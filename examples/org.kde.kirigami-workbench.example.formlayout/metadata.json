@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KirigamiWorkbench/Example",
+    "KPlugin": {
+        "Id": "org.kde.kirigami-workbench.example.formlayout",
+        "Name": "Form Layout",
+        "Description": "A Kirigami.FormLayout with TextField, CheckBox, ComboBox, and SpinBox controls.",
+        "Category": "Forms",
+        "Tags": ["form", "layout", "input", "settings", "textfield", "checkbox"],
+        "Icon": "document-edit-symbolic",
+        "License": "GPL-3.0-or-later",
+        "Version": "1"
+    }
+}

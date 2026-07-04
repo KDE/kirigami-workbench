@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KirigamiWorkbench/Example",
+    "KPlugin": {
+        "Id": "org.kde.kirigami-workbench.example.card",
+        "Name": "Card",
+        "Description": "A Kirigami.Card with header, content, and action buttons.",
+        "Category": "Components",
+        "Tags": ["card", "header", "actions", "layout"],
+        "Icon": "view-cards-symbolic",
+        "License": "GPL-3.0-or-later",
+        "Version": "1"
+    }
+}
