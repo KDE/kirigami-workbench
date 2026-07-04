@@ -1,0 +1,9 @@
+{
+    "KPlugin": {
+        "ServiceTypes": [
+            "KPackage/PackageStructure"
+        ],
+        "Version": "1"
+    },
+    "KPackageStructure": "KirigamiWorkbench/Example"
+}
