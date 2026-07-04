@@ -14,7 +14,7 @@ find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
 list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 find_package(Qt6 ${QT_MIN_VERSION} COMPONENTS Core Widgets Qml QuickWidgets CONFIG REQUIRED)
-find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons XmlGui I18n TextEditor)
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons XmlGui I18n IconThemes TextEditor Package)
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
@@ -24,6 +24,7 @@ include(KDEClangFormat)
 include(FeatureSummary)
 
 add_subdirectory(src)
+add_subdirectory(examples)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
