@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Joshua Goins <josh@redstrate.com>
+// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -6,17 +6,19 @@
 #include <KTextEditor/MainWindow>
 #include <KXmlGuiWindow>
 
-#include <QDir>
-#include <QFileInfo>
-#include <QJsonObject>
-#include <QQuickWidget>
-#include <QTemporaryFile>
-#include <QTextEdit>
-#include <QVBoxLayout>
+#include <QCloseEvent>
+#include <QStackedWidget>
+
+class WorkbenchViewSpace;
+class TabManager;
+class ComponentProject;
+class ExampleModel;
+class WelcomePage;
 
 namespace KTextEditor
 {
 class Application;
+class View;
 }
 
 class MainWindow : public KXmlGuiWindow
@@ -26,7 +28,6 @@ public:
     explicit MainWindow();
 
 public Q_SLOTS:
-    // These slots implements the plugin interface in Kate we need for the LSP plugin
     KTextEditor::MainWindow *activeMainWindow()
     {
         return m_mainWindow;
@@ -34,11 +35,7 @@ public Q_SLOTS:
 
     QWidget *createToolView(KTextEditor::Plugin *, QString, KTextEditor::MainWindow::ToolViewPosition, QIcon, QString)
     {
-        auto widget = new QWidget();
-        auto layout = new QVBoxLayout();
-        widget->setLayout(layout);
-
-        return widget;
+        return new QWidget();
     }
 
     KXMLGUIFactory *guiFactory()
@@ -46,10 +43,7 @@ public Q_SLOTS:
         return KXmlGuiWindow::guiFactory();
     }
 
-    KTextEditor::View *activeView()
-    {
-        return m_view;
-    }
+    KTextEditor::View *activeView();
 
     KTextEditor::Plugin *plugin(const QString &name)
     {
@@ -61,31 +55,25 @@ public Q_SLOTS:
 
     void showMessage(QVariantMap map)
     {
-        // TODO: Implement?
         Q_UNUSED(map)
     }
 
-    QVariantMap projectMapForDocument(KTextEditor::Document *)
-    {
-        const QFileInfo info(m_qmlWorkFile.fileName());
-        return QJsonObject{{QStringLiteral("lspclient"),
-                            QJsonObject{{QStringLiteral("servers"),
-                                         QJsonObject{{QStringLiteral("qml"), QJsonObject{{QStringLiteral("root"), info.absoluteDir().absolutePath()}}}}}}}}
-            .toVariantMap();
-    }
+    QVariantMap projectMapForDocument(KTextEditor::Document *doc);
 
-    KTextEditor::Document *findUrl(const QUrl &url)
-    {
-        Q_UNUSED(url)
-        return m_document;
-    }
+    KTextEditor::Document *findUrl(const QUrl &url);
 
 private:
-    QQuickWidget *m_quickWidget = nullptr;
+    void setupActions();
+    void closeEvent(QCloseEvent *event) override;
+    void showWorkbench();
+
+    ComponentProject *m_project = nullptr;
+    ExampleModel *m_exampleModel = nullptr;
+    WorkbenchViewSpace *m_viewSpace = nullptr;
+    TabManager *m_tabManager = nullptr;
     KTextEditor::Application *m_application = nullptr;
     KTextEditor::MainWindow *m_mainWindow = nullptr;
-    KTextEditor::View *m_view = nullptr;
-    QTemporaryFile m_qmlWorkFile;
-    KTextEditor::Document *m_document = nullptr;
-    QTextEdit *m_consoleWidget = nullptr;
+    QAction *m_toggleGalleryAction = nullptr;
+    QStackedWidget *m_centralStack = nullptr;
+    WelcomePage *m_welcomePage = nullptr;
 };
