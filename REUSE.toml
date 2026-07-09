@@ -1,0 +1,15 @@
+version = 1
+
+# SPDX-FileCopyrightText: 2024 Joshua Goins <josh@redstrate.com>
+# SPDX-License-Identifier: CC0-1.0
+
+[[annotations]]
+path = [
+    ".gitignore",
+    ".gitattributes",
+    ".clang-format",
+    "README.md",
+    "src/assets/kirigami-horizontal.png",
+]
+SPDX-FileCopyrightText = "2024 Joshua Goins <josh@redstrate.com>"
+SPDX-License-Identifier = "CC0-1.0"
