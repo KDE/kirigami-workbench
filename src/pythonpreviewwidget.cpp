@@ -4,6 +4,8 @@
 #include "pythonpreviewwidget.h"
 #include "wbprotocol.h"
 
+#include <KLocalizedString>
+
 #include <QDataStream>
 #include <QKeyEvent>
 #include <QLocalSocket>
@@ -18,7 +20,7 @@ PythonPreviewWidget::PythonPreviewWidget(QWidget *parent)
 {
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
-    m_placeholderText = tr("Press \u25B6 Run (Ctrl+F5) to start the Python app");
+    m_placeholderText = i18n("Press \u25B6 Run (Ctrl+F5) to start the Python app");
     setAttribute(Qt::WA_OpaquePaintEvent);
 }
 
@@ -93,7 +95,7 @@ void PythonPreviewWidget::paintEvent(QPaintEvent * /*event*/)
         p.setPen(QColor(0xFF, 0x60, 0x60));
         const QRect titleRect(textRect.left(), textRect.top(), textRect.width(),
                               QFontMetrics(boldFont).height() + 8);
-        p.drawText(titleRect, Qt::AlignLeft | Qt::AlignVCenter, tr("Python Error"));
+        p.drawText(titleRect, Qt::AlignLeft | Qt::AlignVCenter, i18nc("@label", "Python Error"));
 
         p.setFont(font());
         p.setPen(QColor(0xFF, 0xCC, 0xCC));

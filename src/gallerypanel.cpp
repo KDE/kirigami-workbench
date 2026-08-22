@@ -82,7 +82,7 @@ void GalleryPanel::setupUI()
     layout->setSpacing(margin / 2);
 
     m_searchBar = new QLineEdit(this);
-    m_searchBar->setPlaceholderText(tr("Search examples\u2026"));
+    m_searchBar->setPlaceholderText(i18nc("@info:placeholder", "Search examples\u2026"));
     m_searchBar->setClearButtonEnabled(true);
     layout->addWidget(m_searchBar);
 
@@ -123,7 +123,7 @@ void GalleryPanel::setupConnections()
 
         QMenu menu(this);
 
-        QAction *openAction = menu.addAction(QIcon::fromTheme(u"document-open-symbolic"_s), tr("Open Example"));
+        QAction *openAction = menu.addAction(QIcon::fromTheme(u"document-open-symbolic"_s), i18nc("@action:inmenu", "Open Example"));
         connect(openAction, &QAction::triggered, this, [this, pluginId]() {
             Q_EMIT exampleSelected(pluginId);
         });
@@ -131,8 +131,8 @@ void GalleryPanel::setupConnections()
         menu.addSeparator();
 
         QAction *createAction = menu.addAction(QIcon::fromTheme(u"project-development-new-template"_s),
-                                               tr("Create Project from Example\u2026"));
-        createAction->setToolTip(tr("Scaffold a new KDE project using this example's QML as the starting point."));
+                                               i18nc("@action:inmenu", "Create Project from Example\u2026"));
+        createAction->setToolTip(i18nc("@info:tooltip", "Scaffold a new KDE project using this example's QML as the starting point."));
         connect(createAction, &QAction::triggered, this, [this, pluginId]() {
             Q_EMIT createProjectRequested(pluginId);
         });

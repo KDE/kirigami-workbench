@@ -93,19 +93,19 @@ void WelcomePage::setupUI()
     hl->setContentsMargins(largeMargin, largeMargin, largeMargin, largeMargin);
     hl->setSpacing(smallSpacing);
 
-    auto *title = new QLabel(tr("Kirigami Workbench"), header);
+    auto *title = new QLabel(i18nc("@title", "Kirigami Workbench"), header);
     QFont tf = title->font();
     tf.setPointSizeF(tf.pointSizeF() * 1.8);
     tf.setBold(true);
     title->setFont(tf);
 
-    auto *subtitle = new QLabel(tr("Prototype and explore QML components interactively."), header);
+    auto *subtitle = new QLabel(i18n("Prototype and explore QML components interactively."), header);
     subtitle->setWordWrap(true);
 
     hl->addWidget(title);
     hl->addWidget(subtitle);
 
-    auto *scratchBtn = new QPushButton(QIcon::fromTheme(u"document-new-symbolic"_s), tr("  Start from Scratch"), header);
+    auto *scratchBtn = new QPushButton(QIcon::fromTheme(u"document-new-symbolic"_s), i18nc("@action:button", "  Start from Scratch"), header);
     scratchBtn->setObjectName(u"scratchButton"_s);
     scratchBtn->setMinimumHeight(qMax(32, scratchBtn->fontMetrics().height() * 2));
     connect(scratchBtn, &QPushButton::clicked, this, &WelcomePage::startFromScratch);
@@ -124,14 +124,14 @@ void WelcomePage::setupUI()
     gl->setContentsMargins(largeMargin, baseMargin, largeMargin, baseMargin);
     gl->setSpacing(smallSpacing);
 
-    auto *galleryLabel = new QLabel(tr("Or open an example to get started:"), galleryWidget);
+    auto *galleryLabel = new QLabel(i18n("Or open an example to get started:"), galleryWidget);
     QFont ll = galleryLabel->font();
     ll.setBold(true);
     galleryLabel->setFont(ll);
     gl->addWidget(galleryLabel);
 
     m_searchBar = new QLineEdit(galleryWidget);
-    m_searchBar->setPlaceholderText(tr("Search examples\u2026"));
+    m_searchBar->setPlaceholderText(i18nc("@info:placeholder", "Search examples\u2026"));
     m_searchBar->setClearButtonEnabled(true);
     gl->addWidget(m_searchBar);
 
@@ -173,7 +173,7 @@ void WelcomePage::setupConnections()
 
         QMenu menu(this);
 
-        QAction *openAction = menu.addAction(QIcon::fromTheme(u"document-open-symbolic"_s), tr("Open Example"));
+        QAction *openAction = menu.addAction(QIcon::fromTheme(u"document-open-symbolic"_s), i18nc("@action:inmenu", "Open Example"));
         connect(openAction, &QAction::triggered, this, [this, pluginId]() {
             Q_EMIT exampleSelected(pluginId);
         });
@@ -181,8 +181,8 @@ void WelcomePage::setupConnections()
         menu.addSeparator();
 
         QAction *createAction = menu.addAction(QIcon::fromTheme(u"project-development-new-template"_s),
-                                               tr("Create Project from Example\u2026"));
-        createAction->setToolTip(tr("Scaffold a new KDE project using this example's QML as the starting point."));
+                                               i18nc("@action:inmenu", "Create Project from Example\u2026"));
+        createAction->setToolTip(i18nc("@info:tooltip", "Scaffold a new KDE project using this example's QML as the starting point."));
         connect(createAction, &QAction::triggered, this, [this, pluginId]() {
             Q_EMIT createProjectRequested(pluginId);
         });

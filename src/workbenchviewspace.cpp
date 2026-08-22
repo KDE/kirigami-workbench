@@ -351,8 +351,8 @@ void WorkbenchViewSpace::closeTab(int index)
     if (tabPage->isModified()) {
         QString fileName = QFileInfo(tabPage->filePath()).fileName();
         auto result = QMessageBox::question(this,
-                                            tr("Unsaved Changes"),
-                                            tr("Save changes to %1?").arg(fileName),
+                                            i18nc("@title:window", "Unsaved Changes"),
+                                            i18n("Save changes to %1?", fileName),
                                             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
         if (result == QMessageBox::Cancel)
@@ -438,20 +438,20 @@ void WorkbenchViewSpace::showTabContextMenu(int tabIndex, const QPoint &globalPo
 {
     QMenu menu(this);
 
-    QAction *newTabAction = menu.addAction(QIcon::fromTheme(u"tab-new-symbolic"_s), tr("New tab"));
+    QAction *newTabAction = menu.addAction(QIcon::fromTheme(u"tab-new-symbolic"_s), i18nc("@action:inmenu", "New tab"));
     connect(newTabAction, &QAction::triggered, this, [this]() {
         if (m_project)
             openFile(m_project->mainComponentPath());
     });
 
-    QAction *closeTabAction = menu.addAction(QIcon::fromTheme(u"tab-close-symbolic"_s), tr("Close tab"));
+    QAction *closeTabAction = menu.addAction(QIcon::fromTheme(u"tab-close-symbolic"_s), i18nc("@action:inmenu", "Close tab"));
     connect(closeTabAction, &QAction::triggered, this, [this, tabIndex]() {
         closeTab(tabIndex);
     });
 
     menu.addSeparator();
 
-    QAction *closeOthersAction = menu.addAction(tr("Close other tabs"));
+    QAction *closeOthersAction = menu.addAction(i18nc("@action:inmenu", "Close other tabs"));
     closeOthersAction->setEnabled(m_tabBar->count() > 1);
     connect(closeOthersAction, &QAction::triggered, this, [this, tabIndex]() {
         for (int i = m_tabBar->count() - 1; i >= 0; --i)
@@ -459,7 +459,7 @@ void WorkbenchViewSpace::showTabContextMenu(int tabIndex, const QPoint &globalPo
                 closeTab(i);
     });
 
-    QAction *closeRightAction = menu.addAction(tr("Close tabs to the right"));
+    QAction *closeRightAction = menu.addAction(i18nc("@action:inmenu", "Close tabs to the right"));
     closeRightAction->setEnabled(tabIndex < m_tabBar->count() - 1);
     connect(closeRightAction, &QAction::triggered, this, [this, tabIndex]() {
         for (int i = m_tabBar->count() - 1; i > tabIndex; --i)
@@ -476,13 +476,13 @@ void WorkbenchViewSpace::showFileListContextMenu(const QPoint &pos)
 
     QMenu menu(this);
 
-    QAction *newComponentAction = menu.addAction(QIcon::fromTheme(u"document-new-symbolic"_s), tr("New component\u2026"));
+    QAction *newComponentAction = menu.addAction(QIcon::fromTheme(u"document-new-symbolic"_s), i18nc("@action:inmenu", "New component\u2026"));
     connect(newComponentAction, &QAction::triggered, this, [this]() {
         if (!m_project)
             return;
         bool ok;
         QString componentName =
-            QInputDialog::getText(this, tr("New Component"), tr("Component name (without .qml extension):"), QLineEdit::Normal, QString(), &ok);
+            QInputDialog::getText(this, i18nc("@title:window", "New Component"), i18nc("@label", "Component name (without .qml extension):"), QLineEdit::Normal, QString(), &ok);
         if (ok && !componentName.isEmpty()) {
             QString newFilePath = m_project->addSubComponent(componentName);
             if (!newFilePath.isEmpty()) {
@@ -490,8 +490,8 @@ void WorkbenchViewSpace::showFileListContextMenu(const QPoint &pos)
                 openFile(newFilePath);
             } else {
                 QMessageBox::warning(this,
-                                     tr("Failed to Create Component"),
-                                     tr("Could not create component '%1'. Maximum file limit may have been reached.").arg(componentName));
+                                     i18nc("@title:window", "Failed to Create Component"),
+                                     i18n("Could not create component '%1'. Maximum file limit may have been reached.", componentName));
             }
         }
     });
@@ -501,14 +501,14 @@ void WorkbenchViewSpace::showFileListContextMenu(const QPoint &pos)
         QString filePath = selectedItem->data(Qt::UserRole).toString();
         menu.addSeparator();
 
-        QAction *deleteAction = menu.addAction(QIcon::fromTheme(u"edit-delete-symbolic"_s), tr("Delete component"));
+        QAction *deleteAction = menu.addAction(QIcon::fromTheme(u"edit-delete-symbolic"_s), i18nc("@action:inmenu", "Delete component"));
         deleteAction->setEnabled(m_project && m_project->canRemove(filePath));
 
         connect(deleteAction, &QAction::triggered, this, [this, filePath]() {
             QString fileName = QFileInfo(filePath).fileName();
             auto result = QMessageBox::question(this,
-                                                tr("Delete Component"),
-                                                tr("Are you sure you want to delete %1?").arg(fileName),
+                                                i18nc("@title:window", "Delete Component"),
+                                                i18n("Are you sure you want to delete %1?", fileName),
                                                 QMessageBox::Yes | QMessageBox::No);
             if (result == QMessageBox::Yes && m_project && m_project->removeSubComponent(filePath)) {
                 if (m_fileToTab.contains(filePath)) {
@@ -862,7 +862,7 @@ void WorkbenchViewSpace::openExample(const QString &pluginId)
             m_pythonEntryScript = appPyDst;
             updateFileList();
             if (m_fileModeLabel) {
-                m_fileModeLabel->setText(tr("Python + Kirigami"));
+                m_fileModeLabel->setText(i18nc("@label", "Python + Kirigami"));
                 m_fileModeLabel->setVisible(true);
             }
             Q_EMIT pythonModeChanged(true);
@@ -960,9 +960,9 @@ void WorkbenchViewSpace::openFolder(const QString &dirPath)
 
     if (!m_pythonEntryScript.isEmpty()) {
         m_previewStack->setCurrentIndex(1);
-        m_pythonPreview->showPlaceholder(tr("Press \u25B6 Run (Ctrl+F5) to start the Python app"));
+        m_pythonPreview->showPlaceholder(i18n("Press \u25B6 Run (Ctrl+F5) to start the Python app"));
         if (m_fileModeLabel) {
-            m_fileModeLabel->setText(tr("Python + Kirigami"));
+            m_fileModeLabel->setText(i18nc("@label", "Python + Kirigami"));
             m_fileModeLabel->setVisible(true);
         }
         Q_EMIT pythonModeChanged(true);
@@ -1066,7 +1066,7 @@ void WorkbenchViewSpace::stopPython()
     if (m_pythonRunner) {
         m_pythonRunner->stop();
         m_pythonPreview->detach();
-        m_pythonPreview->showPlaceholder(tr("Press \u25B6 Run (Ctrl+F5) to start the Python app"));
+        m_pythonPreview->showPlaceholder(i18n("Press \u25B6 Run (Ctrl+F5) to start the Python app"));
         Q_EMIT pythonRunningChanged(false);
     }
 }
