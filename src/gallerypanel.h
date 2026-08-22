@@ -19,6 +19,7 @@ public:
 
 Q_SIGNALS:
     void exampleSelected(const QString &pluginId);
+    void createProjectRequested(const QString &pluginId);
 
 private:
     void setupUI();

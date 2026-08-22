@@ -20,6 +20,7 @@ public:
     QStringList subComponentPaths() const;
 
     QString addSubComponent(const QString &filename);
+    bool registerSubComponent(const QString &absolutePath);
     bool removeSubComponent(const QString &path);
     bool canRemove(const QString &path) const;
 

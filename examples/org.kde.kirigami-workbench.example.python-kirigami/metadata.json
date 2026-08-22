@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KirigamiWorkbench/Example",
+    "KPlugin": {
+        "Id": "org.kde.kirigami-workbench.example.python-kirigami",
+        "Name": "Python + Kirigami",
+        "Description": "A Kirigami page layout ready to use as the UI of a PySide6/PyQt6 application.",
+        "Category": "Python",
+        "Tags": ["python", "pyside6", "pyqt6", "kirigami", "page"],
+        "Icon": "text-x-python-script",
+        "License": "GPL-3.0-or-later",
+        "Version": "1"
+    }
+}

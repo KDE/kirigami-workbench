@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
+﻿// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "workbenchviewspace.h"
 #include "componentproject.h"
 #include "examplemodel.h"
 #include "gallerypanel.h"
+#include "pythonpreviewwidget.h"
+#include "pythonrunner.h"
 #include "tabpage.h"
 #include "workbenchtabbar.h"
 
@@ -21,10 +23,12 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QFileSystemModel>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QJsonObject>
+#include <QLabel>
 #include <QListWidget>
 #include <QMenu>
 #include <QMessageBox>
@@ -37,6 +41,7 @@
 #include <QTextEdit>
 #include <QTextStream>
 #include <QTimer>
+#include <QTreeView>
 #include <QVBoxLayout>
 using namespace Qt::StringLiterals;
 
@@ -112,9 +117,43 @@ void WorkbenchViewSpace::setupUI()
 
     m_fileList = new QListWidget(this);
     m_fileList->setContextMenuPolicy(Qt::CustomContextMenu);
-
     connect(m_fileList, &QListWidget::customContextMenuRequested, this, &WorkbenchViewSpace::showFileListContextMenu);
-    m_mainSplitter->addWidget(m_fileList);
+
+    auto *fileListContainer = new QWidget(this);
+    auto *fileListLayout = new QVBoxLayout(fileListContainer);
+    fileListLayout->setContentsMargins(0, 0, 0, 0);
+    fileListLayout->setSpacing(0);
+
+    m_fileModeLabel = new QLabel(this);
+    m_fileModeLabel->setVisible(false);
+    m_fileModeLabel->setAlignment(Qt::AlignCenter);
+    m_fileModeLabel->setStyleSheet(u"QLabel { background: #1a3a1a; color: #7ec87e; "
+                                   "font-size: 10px; padding: 2px; }"_s);
+    fileListLayout->addWidget(m_fileModeLabel);
+    fileListLayout->addWidget(m_fileList, 1);
+
+    m_fsModel = new QFileSystemModel(this);
+    m_fsModel->setReadOnly(true);
+
+    m_folderTree = new QTreeView(this);
+    m_folderTree->setModel(m_fsModel);
+    m_folderTree->setHeaderHidden(true);
+
+    m_folderTree->hideColumn(1);
+    m_folderTree->hideColumn(2);
+    m_folderTree->hideColumn(3);
+    m_folderTree->setAnimated(false);
+    m_folderTree->setIndentation(16);
+    m_folderTree->setUniformRowHeights(true);
+    m_folderTree->setContextMenuPolicy(Qt::NoContextMenu);
+    m_folderTree->setVisible(false);
+
+    m_filePanelStack = new QStackedWidget(this);
+    m_filePanelStack->addWidget(fileListContainer);
+    m_filePanelStack->addWidget(m_folderTree);
+    m_filePanelStack->setCurrentIndex(0);
+
+    m_mainSplitter->addWidget(m_filePanelStack);
 
     auto *rightSplitter = new QSplitter(Qt::Vertical, this);
     auto *topSplitter = new QSplitter(Qt::Horizontal, this);
@@ -154,7 +193,16 @@ void WorkbenchViewSpace::setupUI()
     m_previewWidget->setMinimumSize(200, 200);
     m_previewWidget->setClearColor(Qt::white);
     m_previewWidget->setPalette(lightPalette);
-    topSplitter->addWidget(m_previewWidget);
+
+    m_pythonPreview = new PythonPreviewWidget(this);
+    m_pythonPreview->setMinimumSize(200, 200);
+
+    m_previewStack = new QStackedWidget(this);
+    m_previewStack->addWidget(m_previewWidget);
+    m_previewStack->addWidget(m_pythonPreview);
+    m_previewStack->setCurrentIndex(0);
+
+    topSplitter->addWidget(m_previewStack);
 
     topSplitter->setStretchFactor(0, 4);
     topSplitter->setStretchFactor(1, 1);
@@ -180,6 +228,8 @@ void WorkbenchViewSpace::setupUI()
 
     connect(m_galleryPanel, &GalleryPanel::exampleSelected, this, &WorkbenchViewSpace::openExample);
 
+    connect(m_galleryPanel, &GalleryPanel::createProjectRequested, this, &WorkbenchViewSpace::requestCreateProject);
+
     m_layout->addWidget(m_mainSplitter, 0, 0, 1, 1);
 }
 
@@ -198,6 +248,14 @@ void WorkbenchViewSpace::setupConnections()
     connect(m_fileList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item) {
         QString path = item->data(Qt::UserRole).toString();
         if (!path.isEmpty())
+            openFile(path);
+    });
+
+    connect(m_folderTree, &QTreeView::activated, this, [this](const QModelIndex &index) {
+        if (!m_fsModel)
+            return;
+        const QString path = m_fsModel->filePath(index);
+        if (!m_fsModel->isDir(index))
             openFile(path);
     });
 
@@ -413,6 +471,9 @@ void WorkbenchViewSpace::showTabContextMenu(int tabIndex, const QPoint &globalPo
 
 void WorkbenchViewSpace::showFileListContextMenu(const QPoint &pos)
 {
+    if (m_filePanelStack->currentIndex() != 0)
+        return;
+
     QMenu menu(this);
 
     QAction *newComponentAction = menu.addAction(QIcon::fromTheme(u"document-new-symbolic"_s), tr("New component\u2026"));
@@ -476,13 +537,24 @@ KTextEditor::Document *WorkbenchViewSpace::getOrCreateDocument(const QString &fi
 
     auto *doc = KTextEditor::Editor::instance()->createDocument(this);
 
-    doc->setHighlightingMode(u"QML"_s);
-    doc->setMode(u"QML"_s);
-    doc->setConfigValue(u"auto-brackets"_s, true);
-    doc->setConfigValue(u"indent-mode"_s, u"cstyle"_s);
-    doc->setConfigValue(u"indent-width"_s, 4);
-    doc->setConfigValue(u"replace-tabs"_s, true);
-    doc->setConfigValue(u"tab-width"_s, 4);
+    const bool isPython = absolutePath.endsWith(u".py"_s, Qt::CaseInsensitive);
+
+    if (isPython) {
+        doc->setHighlightingMode(u"Python"_s);
+        doc->setMode(u"Python"_s);
+        doc->setConfigValue(u"indent-mode"_s, u"python"_s);
+        doc->setConfigValue(u"indent-width"_s, 4);
+        doc->setConfigValue(u"replace-tabs"_s, true);
+        doc->setConfigValue(u"tab-width"_s, 4);
+    } else {
+        doc->setHighlightingMode(u"QML"_s);
+        doc->setMode(u"QML"_s);
+        doc->setConfigValue(u"auto-brackets"_s, true);
+        doc->setConfigValue(u"indent-mode"_s, u"cstyle"_s);
+        doc->setConfigValue(u"indent-width"_s, 4);
+        doc->setConfigValue(u"replace-tabs"_s, true);
+        doc->setConfigValue(u"tab-width"_s, 4);
+    }
 
     QFile loadFile(absolutePath);
     if (loadFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -529,7 +601,23 @@ KTextEditor::Document *WorkbenchViewSpace::getOrCreateDocument(const QString &fi
                 if (idx >= 0)
                     m_tabBar->setModifiedStateIcon(idx, false);
             }
-            reloadPreview();
+
+            const bool isPyFile = savedPath.endsWith(u".py"_s, Qt::CaseInsensitive);
+            if (isPyFile) {
+                const QString name = QFileInfo(savedPath).fileName();
+                const QString escaped = name.toHtmlEscaped();
+                m_consoleWidget->append(
+                    u"<span style='color:#888'>— "_s + escaped + u" saved —</span>"_s);
+                if (m_pythonRunner && m_pythonRunner->isRunning())
+                    runPython();
+                else if (!m_pythonEntryScript.isEmpty())
+                    m_consoleWidget->append(
+                        u"<span style='color:#888'>Press \u25B6 Run (Ctrl+F5) to execute.</span>"_s);
+            } else {
+                reloadPreview();
+                if (isPythonMode() && m_pythonRunner && m_pythonRunner->isRunning())
+                    runPython();
+            }
         } else {
             log(u"Auto-save failed: "_s + file.errorString());
         }
@@ -566,14 +654,48 @@ void WorkbenchViewSpace::updateFileList()
         item->setData(Qt::UserRole, displayPath);
         m_fileList->addItem(item);
     }
+
+    if (!m_pythonEntryScript.isEmpty() && m_filePanelStack->currentIndex() == 0) {
+        const QString workingDir = m_project->workingDirectory();
+        const QStringList pyFiles = QDir(workingDir).entryList({u"*.py"_s}, QDir::Files);
+        for (const QString &fileName : pyFiles) {
+            const QString absPath = QFileInfo(QDir(workingDir).filePath(fileName)).canonicalFilePath();
+            if (absPath.isEmpty())
+                continue;
+            bool already = false;
+            for (int i = 0; i < m_fileList->count(); ++i) {
+                if (m_fileList->item(i)->data(Qt::UserRole).toString() == absPath) {
+                    already = true;
+                    break;
+                }
+            }
+            if (!already) {
+                auto *item = new QListWidgetItem(fileName);
+                item->setData(Qt::UserRole, absPath);
+                m_fileList->addItem(item);
+            }
+        }
+    }
 }
 
 void WorkbenchViewSpace::reloadPreview()
 {
-    if (!m_previewWidget || !m_project)
+    if (!m_previewWidget)
         return;
 
-    QString mainPath = m_project->mainComponentPath();
+    QString mainPath;
+    QString workingDir;
+
+    if (!m_folderRootPath.isEmpty() && !m_folderMainQmlPath.isEmpty()) {
+        mainPath = m_folderMainQmlPath;
+        workingDir = QFileInfo(mainPath).absolutePath();
+    } else {
+        if (!m_project)
+            return;
+        mainPath = m_project->mainComponentPath();
+        workingDir = m_project->workingDirectory();
+    }
+
     if (mainPath.isEmpty())
         return;
 
@@ -585,23 +707,21 @@ void WorkbenchViewSpace::reloadPreview()
     if (!engine)
         return;
 
-    QString workingDir = m_project->workingDirectory();
     if (!workingDir.isEmpty()) {
-        QString absWorkingDir = QDir(workingDir).absolutePath();
-        auto importPaths = engine->importPathList();
+        const QString absWorkingDir = QDir(workingDir).absolutePath();
+        const auto importPaths = engine->importPathList();
         if (!importPaths.contains(absWorkingDir))
             engine->addImportPath(absWorkingDir);
     }
 
     engine->clearComponentCache();
 
-    QString wrapperPath = QDir(workingDir).filePath(u"_preview_wrapper.qml"_s);
+    const QString wrapperPath = QDir(workingDir).filePath(u"_preview_wrapper.qml"_s);
+    const QString mainFileUrl = QUrl::fromLocalFile(fileInfo.absoluteFilePath()).toString();
 
     QFile wrapper(wrapperPath);
     if (wrapper.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&wrapper);
-        QString mainUrl =
-            QUrl::fromLocalFile(fileInfo.absoluteFilePath()).toString() + u"?t="_s + QString::number(QDateTime::currentMSecsSinceEpoch());
         out << "import QtQuick\n"
             << "import QtQuick.Controls as QQC2\n"
             << "import org.kde.kirigami as Kirigami\n"
@@ -623,16 +743,17 @@ void WorkbenchViewSpace::reloadPreview()
             << "        height: root.height\n"
             << "        Kirigami.Theme.colorSet: Kirigami.Theme.View\n"
             << "        Kirigami.Theme.inherit: false\n"
-            << "        source: \"" << mainUrl << "\"\n"
+            << "        source: \"" << mainFileUrl << "\"\n"
             << "        onLoaded: { if (item) { item.width = root.width; item.height = root.height } }\n"
             << "    }\n"
             << "}\n";
         wrapper.close();
     }
 
-    QUrl reloadUrl = QUrl::fromLocalFile(wrapperPath);
-    reloadUrl.setQuery(u"t=%1"_s.arg(QDateTime::currentMSecsSinceEpoch()));
-    m_previewWidget->setSource(reloadUrl);
+    m_previewWidget->setSource(QUrl());
+    QUrl wrapperUrl = QUrl::fromLocalFile(wrapperPath);
+    wrapperUrl.setQuery(u"t=%1"_s.arg(QDateTime::currentMSecsSinceEpoch()));
+    m_previewWidget->setSource(wrapperUrl);
 }
 
 void WorkbenchViewSpace::openExample(const QString &pluginId)
@@ -679,6 +800,11 @@ void WorkbenchViewSpace::openExample(const QString &pluginId)
         m_tabBar->removeTab(0);
     }
 
+    switchToComponentView();
+    const QStringList oldSubs = m_project->subComponentPaths();
+    for (const QString &old : oldSubs)
+        m_project->removeSubComponent(old);
+
     for (const QString &fileName : qmlFiles) {
         const QString src = QDir(uiDir).filePath(fileName);
         const QString destName = (fileName.compare(u"main.qml"_s, Qt::CaseInsensitive) == 0)
@@ -689,6 +815,15 @@ void WorkbenchViewSpace::openExample(const QString &pluginId)
             QFile::remove(dst);
         if (!QFile::copy(src, dst))
             log(u"Failed to copy: "_s + QFileInfo(src).fileName());
+    }
+
+    for (const QString &fileName : qmlFiles) {
+        if (fileName.compare(u"main.qml"_s, Qt::CaseInsensitive) == 0)
+            continue;
+        const QString dst = QDir(workingDir).filePath(fileName);
+        const QString absDst = QFileInfo(dst).absoluteFilePath();
+        if (QFile::exists(absDst))
+            m_project->registerSubComponent(absDst);
     }
 
     updateFileList();
@@ -718,7 +853,222 @@ void WorkbenchViewSpace::openExample(const QString &pluginId)
     if (!mainDest.isEmpty() && QFile::exists(mainDest))
         openFile(mainDest);
 
+    const QString appPySrc = QDir(uiDir).filePath(u"app.py"_s);
+    if (QFile::exists(appPySrc)) {
+        const QString appPyDst = QDir(workingDir).filePath(u"app.py"_s);
+        if (QFile::exists(appPyDst))
+            QFile::remove(appPyDst);
+        if (QFile::copy(appPySrc, appPyDst)) {
+            m_pythonEntryScript = appPyDst;
+            updateFileList();
+            if (m_fileModeLabel) {
+                m_fileModeLabel->setText(tr("Python + Kirigami"));
+                m_fileModeLabel->setVisible(true);
+            }
+            Q_EMIT pythonModeChanged(true);
+        }
+    }
+
     reloadPreview();
+}
+
+void WorkbenchViewSpace::switchToFolderView(const QString &rootPath)
+{
+    m_folderRootPath = rootPath;
+    const QModelIndex root = m_fsModel->setRootPath(rootPath);
+    m_folderTree->setRootIndex(root);
+    m_folderTree->expandToDepth(1);
+    m_filePanelStack->setCurrentIndex(1);
+}
+
+void WorkbenchViewSpace::switchToComponentView()
+{
+    m_folderRootPath.clear();
+    m_folderMainQmlPath.clear();
+    m_filePanelStack->setCurrentIndex(0);
+
+    if (!m_pythonEntryScript.isEmpty()) {
+        stopPython();
+        m_pythonEntryScript.clear();
+        m_previewStack->setCurrentIndex(0);
+        if (m_fileModeLabel)
+            m_fileModeLabel->setVisible(false);
+        Q_EMIT pythonModeChanged(false);
+    }
+}
+
+void WorkbenchViewSpace::openFolder(const QString &dirPath)
+{
+    const QDir dir(dirPath);
+    if (!dir.exists()) {
+        qWarning() << "openFolder: directory does not exist:" << dirPath;
+        return;
+    }
+
+    while (m_tabBar->count() > 0) {
+        TabPage *tabPage = qobject_cast<TabPage *>(m_stack->widget(0));
+        if (tabPage) {
+            m_fileToTab.remove(tabPage->filePath());
+            m_stack->removeWidget(tabPage);
+            tabPage->deleteLater();
+        }
+        m_tabBar->removeTab(0);
+    }
+
+    switchToFolderView(dir.absolutePath());
+
+    auto findMainQml = [&](const QString &root) -> QString {
+        const QStringList candidates = {
+            root + u"/src/main.qml"_s,          
+            root + u"/main.qml"_s, 
+            root + u"/Main.qml"_s,
+            root + u"/src/contents/ui/main.qml"_s,
+            root + u"/src/contents/ui/Main.qml"_s,
+            root + u"/contents/ui/main.qml"_s,
+            root + u"/contents/ui/Main.qml"_s,
+        };
+        for (const QString &p : candidates) {
+            if (QFile::exists(p))
+                return p;
+        }
+        return QString();
+    };
+
+    m_folderMainQmlPath = findMainQml(dir.absolutePath());
+
+    auto findPythonEntry = [&](const QString &root) -> QString {
+        const QStringList preferred = {
+            root + u"/src/app.py"_s,
+            root + u"/src/__main__.py"_s,
+            root + u"/app.py"_s,
+            root + u"/__main__.py"_s,
+        };
+        for (const QString &p : preferred) {
+            if (QFile::exists(p))
+                return p;
+        }
+
+        for (const QString &subdir : { root, root + u"/src"_s }) {
+            const QStringList py = QDir(subdir).entryList({u"*.py"_s}, QDir::Files);
+            if (!py.isEmpty())
+                return QDir(subdir).filePath(py.first());
+        }
+        return {};
+    };
+
+    m_pythonEntryScript = findPythonEntry(dir.absolutePath());
+
+    if (!m_pythonEntryScript.isEmpty()) {
+        m_previewStack->setCurrentIndex(1);
+        m_pythonPreview->showPlaceholder(tr("Press \u25B6 Run (Ctrl+F5) to start the Python app"));
+        if (m_fileModeLabel) {
+            m_fileModeLabel->setText(tr("Python + Kirigami"));
+            m_fileModeLabel->setVisible(true);
+        }
+        Q_EMIT pythonModeChanged(true);
+    } else {
+
+        m_previewStack->setCurrentIndex(0);
+        Q_EMIT pythonModeChanged(false);
+    }
+
+    if (!m_folderMainQmlPath.isEmpty()) {
+        const QString qmlDir = QFileInfo(m_folderMainQmlPath).absolutePath();
+        const QStringList qmlFiles = QDir(qmlDir).entryList({u"*.qml"_s}, QDir::Files);
+        for (const QString &fileName : qmlFiles) {
+            const QString absPath = QDir(qmlDir).filePath(fileName);
+            if (absPath != m_folderMainQmlPath)
+                openFile(absPath);
+        }
+        openFile(m_folderMainQmlPath);
+    }
+    reloadPreview();
+}
+
+void WorkbenchViewSpace::runPython()
+{
+    if (m_pythonEntryScript.isEmpty()) {
+        log(u"No Python entry script found in this folder."_s);
+        return;
+    }
+
+    if (!m_pythonRunner) {
+        m_pythonRunner = new PythonRunner(this);
+
+        connect(m_pythonRunner, &PythonRunner::outputLine, this, [this](const QString &line) {
+            if (!line.isEmpty())
+                m_consoleWidget->append(u"<span style='color:#a8d8a8'>"_s
+                                        + line.toHtmlEscaped() + u"</span>"_s);
+        });
+
+        connect(m_pythonRunner, &PythonRunner::errorLine, this, [this](const QString &line) {
+            if (!line.isEmpty()) {
+                const QString color = m_consoleWidget->palette()
+                    .color(QPalette::Active, QPalette::HighlightedText).name();
+                m_consoleWidget->append(u"<span style='color:"_s + color
+                                        + u"'>error: </span>"_s + line.toHtmlEscaped());
+            }
+        });
+
+        connect(m_pythonRunner, &PythonRunner::error, this, [this](const QString &msg) {
+            const QString color = m_consoleWidget->palette()
+                .color(QPalette::Active, QPalette::HighlightedText).name();
+            m_consoleWidget->append(u"<span style='color:"_s + color
+                + u"'>"_s + msg.toHtmlEscaped().replace(u"\n"_s, u"<br>"_s) + u"</span>"_s);
+            if (m_pythonPreview)
+                m_pythonPreview->showError(msg);
+        });
+
+        connect(m_pythonRunner, &PythonRunner::bridgeConnected, this, [this]() {
+            if (m_pythonPreview)
+                m_pythonPreview->attachRunner(m_pythonRunner);
+            Q_EMIT pythonRunningChanged(true);
+        });
+
+        connect(m_pythonRunner, &PythonRunner::bridgeDisconnected, this, [this]() {
+            if (m_pythonPreview)
+                m_pythonPreview->detach();
+            Q_EMIT pythonRunningChanged(false);
+        });
+
+        connect(m_pythonRunner, &PythonRunner::stopped, this, [this](int exitCode) {
+            Q_UNUSED(exitCode)
+            if (m_pythonPreview)
+                m_pythonPreview->detach();
+            Q_EMIT pythonRunningChanged(false);
+        });
+    }
+
+    for (auto it = m_documents.constBegin(); it != m_documents.constEnd(); ++it) {
+        KTextEditor::Document *doc = it.value();
+        if (!doc)
+            continue;
+        const QString path = it.key();
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            file.write(doc->text().toUtf8());
+            file.flush();
+            file.close();
+            QSignalBlocker blocker(doc);
+            doc->setModified(false);
+        }
+    }
+
+    m_consoleWidget->clear();
+    m_previewStack->setCurrentIndex(1);
+    m_pythonPreview->showPlaceholder(QString());
+
+    m_pythonRunner->start(m_pythonEntryScript);
+}
+
+void WorkbenchViewSpace::stopPython()
+{
+    if (m_pythonRunner) {
+        m_pythonRunner->stop();
+        m_pythonPreview->detach();
+        m_pythonPreview->showPlaceholder(tr("Press \u25B6 Run (Ctrl+F5) to start the Python app"));
+        Q_EMIT pythonRunningChanged(false);
+    }
 }
 
 void WorkbenchViewSpace::setGalleryVisible(bool visible)
@@ -748,6 +1098,8 @@ void WorkbenchViewSpace::resetToBlank()
         doc->deleteLater();
     m_documents.clear();
 
+    switchToComponentView();
+
     if (m_project)
         m_project->reset();
 
@@ -756,4 +1108,32 @@ void WorkbenchViewSpace::resetToBlank()
         openFile(m_project->mainComponentPath());
         reloadPreview();
     }
+}
+
+void WorkbenchViewSpace::requestCreateProject(const QString &pluginId)
+{
+    QString exampleName;
+    QString uiDir;
+
+    KPackage::Package pkg = KPackage::PackageLoader::self()->loadPackage(u"KirigamiWorkbench/Example"_s, pluginId);
+    if (pkg.isValid()) {
+        exampleName = pkg.metadata().name();
+        uiDir = QDir(pkg.path()).filePath(u"contents/ui"_s);
+    } else {
+        for (int i = 0; i < m_exampleModel->rowCount(); ++i) {
+            const QModelIndex idx = m_exampleModel->index(i, 0);
+            if (idx.data(ExampleModel::PluginIdRole).toString() == pluginId) {
+                exampleName = idx.data(Qt::DisplayRole).toString();
+                const QString pkgPath = idx.data(ExampleModel::PackagePathRole).toString();
+                if (!pkgPath.isEmpty())
+                    uiDir = QDir(pkgPath).filePath(u"contents/ui"_s);
+                break;
+            }
+        }
+    }
+
+    if (exampleName.isEmpty())
+        exampleName = pluginId;
+
+    Q_EMIT createProjectRequested(pluginId, exampleName, uiDir);
 }

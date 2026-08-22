@@ -35,3 +35,8 @@ kpackage_install_package(org.kde.kirigami-workbench.example.menudialog
     org.kde.kirigami-workbench.example.menudialog
     packages/example
     kirigami-workbench)
+
+kpackage_install_package(org.kde.kirigami-workbench.example.python-kirigami
+    org.kde.kirigami-workbench.example.python-kirigami
+    packages/example
+    kirigami-workbench)

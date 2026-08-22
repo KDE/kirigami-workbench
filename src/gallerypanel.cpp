@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QLineEdit>
 #include <QListView>
+#include <QMenu>
 #include <QPainter>
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
@@ -108,6 +109,35 @@ void GalleryPanel::setupConnections()
         const QString pluginId = index.data(ExampleModel::PluginIdRole).toString();
         if (!pluginId.isEmpty())
             Q_EMIT exampleSelected(pluginId);
+    });
+
+    m_listView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_listView, &QWidget::customContextMenuRequested, this, [this](const QPoint &pos) {
+        const QModelIndex index = m_listView->indexAt(pos);
+        if (!index.isValid())
+            return;
+
+        const QString pluginId = index.data(ExampleModel::PluginIdRole).toString();
+        if (pluginId.isEmpty())
+            return;
+
+        QMenu menu(this);
+
+        QAction *openAction = menu.addAction(QIcon::fromTheme(u"document-open-symbolic"_s), tr("Open Example"));
+        connect(openAction, &QAction::triggered, this, [this, pluginId]() {
+            Q_EMIT exampleSelected(pluginId);
+        });
+
+        menu.addSeparator();
+
+        QAction *createAction = menu.addAction(QIcon::fromTheme(u"project-development-new-template"_s),
+                                               tr("Create Project from Example\u2026"));
+        createAction->setToolTip(tr("Scaffold a new KDE project using this example's QML as the starting point."));
+        connect(createAction, &QAction::triggered, this, [this, pluginId]() {
+            Q_EMIT createProjectRequested(pluginId);
+        });
+
+        menu.exec(m_listView->viewport()->mapToGlobal(pos));
     });
 }
 

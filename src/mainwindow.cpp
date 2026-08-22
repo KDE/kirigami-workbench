@@ -3,7 +3,9 @@
 
 #include "mainwindow.h"
 #include "componentproject.h"
+#include "createprojectdialog.h"
 #include "examplemodel.h"
+#include "gallerypanel.h"
 #include "tabmanager.h"
 #include "tabpage.h"
 #include "welcomepage.h"
@@ -58,6 +60,26 @@ MainWindow::MainWindow()
     connect(m_welcomePage, &WelcomePage::exampleSelected, this, [this](const QString &pluginId) {
         showWorkbench();
         m_viewSpace->openExample(pluginId);
+    });
+    connect(m_welcomePage, &WelcomePage::createProjectRequested, this, [this](const QString &pluginId) {
+        m_viewSpace->requestCreateProject(pluginId);
+    });
+
+    connect(m_viewSpace, &WorkbenchViewSpace::createProjectRequested, this, [this](const QString &pluginId, const QString &exampleName, const QString &uiDir) {
+        auto *dlg = new CreateProjectDialog(exampleName, uiDir, this);
+        dlg->setAttribute(Qt::WA_DeleteOnClose);
+        connect(dlg, &CreateProjectDialog::openInWorkbench, this, [this](const QStringList &filePaths) {
+            if (filePaths.isEmpty())
+                return;
+
+            const QString srcDir = QFileInfo(filePaths.first()).absolutePath();
+            const QString projectRoot = QFileInfo(srcDir).absolutePath();
+            const QString folderToOpen = QDir(projectRoot).exists() ? projectRoot : srcDir;
+
+            showWorkbench();
+            m_viewSpace->openFolder(folderToOpen);
+        });
+        dlg->exec();
     });
 
     m_centralStack->setCurrentIndex(0);
@@ -202,6 +224,37 @@ void MainWindow::setupActions()
     actionCollection()->setDefaultShortcut(m_toggleGalleryAction, Qt::CTRL | Qt::Key_G);
     connect(m_toggleGalleryAction, &QAction::toggled, this, [this](bool checked) {
         m_viewSpace->setGalleryVisible(checked);
+    });
+
+    m_pythonRunAction = actionCollection()->addAction(u"python_run"_s);
+    m_pythonRunAction->setText(i18n("Run Python app"));
+    m_pythonRunAction->setIcon(QIcon::fromTheme(u"media-playback-start-symbolic"_s));
+    actionCollection()->setDefaultShortcut(m_pythonRunAction, Qt::CTRL | Qt::Key_F5);
+    m_pythonRunAction->setVisible(false);
+    connect(m_pythonRunAction, &QAction::triggered, this, [this]() {
+        m_viewSpace->runPython();
+    });
+
+    m_pythonStopAction = actionCollection()->addAction(u"python_stop"_s);
+    m_pythonStopAction->setText(i18n("Stop Python app"));
+    m_pythonStopAction->setIcon(QIcon::fromTheme(u"media-playback-stop-symbolic"_s));
+    m_pythonStopAction->setVisible(false);
+    m_pythonStopAction->setEnabled(false);
+    connect(m_pythonStopAction, &QAction::triggered, this, [this]() {
+        m_viewSpace->stopPython();
+    });
+
+    connect(m_viewSpace, &WorkbenchViewSpace::pythonModeChanged, this, [this](bool active) {
+        m_pythonRunAction->setVisible(active);
+        m_pythonStopAction->setVisible(active);
+        if (!active) {
+            m_pythonRunAction->setEnabled(true);
+            m_pythonStopAction->setEnabled(false);
+        }
+    });
+    connect(m_viewSpace, &WorkbenchViewSpace::pythonRunningChanged, this, [this](bool running) {
+        m_pythonRunAction->setEnabled(!running);
+        m_pythonStopAction->setEnabled(running);
     });
 
     QAction *backToWelcomeAction = actionCollection()->addAction(u"view_welcome"_s);

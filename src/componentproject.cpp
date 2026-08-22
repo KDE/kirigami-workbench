@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
+﻿// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "componentproject.h"
@@ -21,7 +21,6 @@ ComponentProject::~ComponentProject() = default;
 void ComponentProject::initializeMainComponent()
 {
     if (!m_workingDir.isValid()) {
-        qWarning() << "Failed to create working directory for ComponentProject";
         return;
     }
 
@@ -69,7 +68,6 @@ QStringList ComponentProject::subComponentPaths() const
 QString ComponentProject::addSubComponent(const QString &filename)
 {
     if (!canAddFile()) {
-        qWarning() << "Cannot add file: maximum file limit reached";
         return QString();
     }
 
@@ -77,7 +75,6 @@ QString ComponentProject::addSubComponent(const QString &filename)
     QString filePath = m_workingDir.filePath(qmlFilename);
 
     if (QFile::exists(filePath)) {
-        qWarning() << "File already exists:" << filePath;
         return QString();
     }
 
@@ -94,6 +91,20 @@ QString ComponentProject::addSubComponent(const QString &filename)
 
     qWarning() << "Failed to create sub-component file:" << filePath;
     return QString();
+}
+
+bool ComponentProject::registerSubComponent(const QString &absolutePath)
+{
+    if (absolutePath.isEmpty() || !QFile::exists(absolutePath)) {
+        return false;
+    }
+    const QString canonical = QFileInfo(absolutePath).canonicalFilePath();
+    const QString key = canonical.isEmpty() ? absolutePath : canonical;
+    if (key == m_mainComponentPath || m_subComponentPaths.contains(key))
+        return false;
+    m_subComponentPaths.append(key);
+    Q_EMIT fileAdded(key);
+    return true;
 }
 
 bool ComponentProject::removeSubComponent(const QString &path)

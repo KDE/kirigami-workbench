@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
+﻿// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -76,4 +76,6 @@ private:
     QAction *m_toggleGalleryAction = nullptr;
     QStackedWidget *m_centralStack = nullptr;
     WelcomePage *m_welcomePage = nullptr;
+    QAction *m_pythonRunAction = nullptr;
+    QAction *m_pythonStopAction = nullptr;
 };
