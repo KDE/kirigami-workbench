@@ -30,8 +30,8 @@ void PythonPreviewWidget::attachRunner(PythonRunner *runner)
 
     m_runner = runner;
     m_socket = runner->socket();
-    m_state  = State::Running;
-    m_frame  = QImage();
+    m_state = State::Running;
+    m_frame = QImage();
 
     if (m_socket) {
         connect(m_socket, &QLocalSocket::readyRead, this, &PythonPreviewWidget::onReadyRead);
@@ -47,7 +47,7 @@ void PythonPreviewWidget::detach()
         m_socket = nullptr;
     }
     m_runner = nullptr;
-    m_frame  = QImage();
+    m_frame = QImage();
     m_readBuffer.clear();
     m_state = State::Idle;
     update();
@@ -63,7 +63,7 @@ void PythonPreviewWidget::showPlaceholder(const QString &text)
 void PythonPreviewWidget::showError(const QString &message)
 {
     m_errorText = message;
-    m_state     = State::Error;
+    m_state = State::Error;
     update();
 }
 
@@ -93,20 +93,17 @@ void PythonPreviewWidget::paintEvent(QPaintEvent * /*event*/)
         boldFont.setPointSizeF(boldFont.pointSizeF() * 1.1);
         p.setFont(boldFont);
         p.setPen(QColor(0xFF, 0x60, 0x60));
-        const QRect titleRect(textRect.left(), textRect.top(), textRect.width(),
-                              QFontMetrics(boldFont).height() + 8);
+        const QRect titleRect(textRect.left(), textRect.top(), textRect.width(), QFontMetrics(boldFont).height() + 8);
         p.drawText(titleRect, Qt::AlignLeft | Qt::AlignVCenter, i18nc("@label", "Python Error"));
 
         p.setFont(font());
         p.setPen(QColor(0xFF, 0xCC, 0xCC));
-        p.drawText(textRect.adjusted(0, titleRect.height() + 4, 0, 0),
-                   Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, text);
+        p.drawText(textRect.adjusted(0, titleRect.height() + 4, 0, 0), Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, text);
 
     } else if (!m_placeholderText.isEmpty()) {
         const int margin = 20;
         p.setPen(QColor(0x80, 0x80, 0x80));
-        p.drawText(rect().adjusted(margin, margin, -margin, -margin),
-                   Qt::AlignCenter | Qt::TextWordWrap, m_placeholderText);
+        p.drawText(rect().adjusted(margin, margin, -margin, -margin), Qt::AlignCenter | Qt::TextWordWrap, m_placeholderText);
     }
 }
 
@@ -120,39 +117,27 @@ void PythonPreviewWidget::resizeEvent(QResizeEvent *event)
 void PythonPreviewWidget::mousePressEvent(QMouseEvent *event)
 {
     setFocus();
-    sendMessage(WbProtocol::makeMouseEvent(
-        WbProtocol::MSG_MOUSE_PRESS,
-        event->position().x(), event->position().y(),
-        static_cast<int>(event->button())));
+    sendMessage(WbProtocol::makeMouseEvent(WbProtocol::MSG_MOUSE_PRESS, event->position().x(), event->position().y(), static_cast<int>(event->button())));
 }
 
 void PythonPreviewWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    sendMessage(WbProtocol::makeMouseEvent(
-        WbProtocol::MSG_MOUSE_RELEASE,
-        event->position().x(), event->position().y(),
-        static_cast<int>(event->button())));
+    sendMessage(WbProtocol::makeMouseEvent(WbProtocol::MSG_MOUSE_RELEASE, event->position().x(), event->position().y(), static_cast<int>(event->button())));
 }
 
 void PythonPreviewWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    sendMessage(WbProtocol::makeMouseEvent(
-        WbProtocol::MSG_MOUSE_MOVE,
-        event->position().x(), event->position().y()));
+    sendMessage(WbProtocol::makeMouseEvent(WbProtocol::MSG_MOUSE_MOVE, event->position().x(), event->position().y()));
 }
 
 void PythonPreviewWidget::keyPressEvent(QKeyEvent *event)
 {
-    sendMessage(WbProtocol::makeKeyEvent(
-        WbProtocol::MSG_KEY_PRESS,
-        event->key(), static_cast<int>(event->modifiers()), event->text()));
+    sendMessage(WbProtocol::makeKeyEvent(WbProtocol::MSG_KEY_PRESS, event->key(), static_cast<int>(event->modifiers()), event->text()));
 }
 
 void PythonPreviewWidget::keyReleaseEvent(QKeyEvent *event)
 {
-    sendMessage(WbProtocol::makeKeyEvent(
-        WbProtocol::MSG_KEY_RELEASE,
-        event->key(), static_cast<int>(event->modifiers()), event->text()));
+    sendMessage(WbProtocol::makeKeyEvent(WbProtocol::MSG_KEY_RELEASE, event->key(), static_cast<int>(event->modifiers()), event->text()));
 }
 
 void PythonPreviewWidget::sendMessage(const QByteArray &msg)
@@ -196,7 +181,6 @@ void PythonPreviewWidget::processIncoming()
 void PythonPreviewWidget::handleMessage(quint32 type, const QByteArray &payload)
 {
     switch (type) {
-
     case WbProtocol::MSG_READY:
         m_state = State::Running;
         sendResize();
@@ -209,11 +193,7 @@ void PythonPreviewWidget::handleMessage(quint32 type, const QByteArray &payload)
             break;
 
         if (f.format == WbProtocol::FMT_RGBA8888) {
-            m_frame = QImage(
-                reinterpret_cast<const uchar *>(f.data.constData()),
-                f.width, f.height,
-                f.width * 4,
-                QImage::Format_RGBA8888).copy();
+            m_frame = QImage(reinterpret_cast<const uchar *>(f.data.constData()), f.width, f.height, f.width * 4, QImage::Format_RGBA8888).copy();
         } else if (f.format == WbProtocol::FMT_JPEG) {
             m_frame.loadFromData(f.data, "JPEG");
         }

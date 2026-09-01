@@ -58,8 +58,9 @@ void PythonRunner::start(const QString &userScript)
 
     const QString python = findPython();
     if (python.isEmpty()) {
-        Q_EMIT error(i18n("Python interpreter not found. "
-                          "Install Python 3 and make sure it is on PATH."));
+        Q_EMIT error(
+            i18n("Python interpreter not found. "
+                 "Install Python 3 and make sure it is on PATH."));
         return;
     }
 
@@ -78,10 +79,11 @@ void PythonRunner::start(const QString &userScript)
 
     {
         QProcess check;
-        check.start(python, { u"-c"_s,
-            u"import importlib.util\n"
-            "found = importlib.util.find_spec('PySide6') or importlib.util.find_spec('PyQt6')\n"
-            "raise SystemExit(0 if found else 1)"_s });
+        check.start(python,
+                    {u"-c"_s,
+                     u"import importlib.util\n"
+                     "found = importlib.util.find_spec('PySide6') or importlib.util.find_spec('PyQt6')\n"
+                     "raise SystemExit(0 if found else 1)"_s});
         check.waitForFinished(5000);
         if (check.exitCode() != 0) {
             Q_EMIT error(
@@ -105,18 +107,19 @@ void PythonRunner::start(const QString &userScript)
 #ifdef Q_OS_WIN
     {
         QProcess probe;
-        probe.start(python, { u"-c"_s,
-            u"import PySide6, os; print(os.path.dirname(PySide6.__file__))"_s });
+        probe.start(python, {u"-c"_s, u"import PySide6, os; print(os.path.dirname(PySide6.__file__))"_s});
         if (probe.waitForFinished(5000)) {
             const QString pyside6Dir = QString::fromUtf8(probe.readAllStandardOutput()).trimmed();
 
             const QString exeDir = QCoreApplication::applicationDirPath();
             const QString exeDirNative = QDir::toNativeSeparators(exeDir);
             QStringList pathDirs = env.value(u"PATH"_s).split(u";"_s, Qt::SkipEmptyParts);
-            pathDirs.erase(std::remove_if(pathDirs.begin(), pathDirs.end(),
-                [&exeDirNative](const QString &d) {
-                    return QDir::toNativeSeparators(d).compare(exeDirNative, Qt::CaseInsensitive) == 0;
-                }), pathDirs.end());
+            pathDirs.erase(std::remove_if(pathDirs.begin(),
+                                          pathDirs.end(),
+                                          [&exeDirNative](const QString &d) {
+                                              return QDir::toNativeSeparators(d).compare(exeDirNative, Qt::CaseInsensitive) == 0;
+                                          }),
+                           pathDirs.end());
             if (!pyside6Dir.isEmpty())
                 pathDirs.prepend(pyside6Dir);
             env.insert(u"PATH"_s, pathDirs.join(u";"_s));
@@ -142,12 +145,12 @@ void PythonRunner::start(const QString &userScript)
 #endif
     m_process->setProcessEnvironment(env);
 
-    connect(m_process, &QProcess::finished,                this, &PythonRunner::onProcessFinished);
-    connect(m_process, &QProcess::errorOccurred,           this, &PythonRunner::onProcessError);
+    connect(m_process, &QProcess::finished, this, &PythonRunner::onProcessFinished);
+    connect(m_process, &QProcess::errorOccurred, this, &PythonRunner::onProcessError);
     connect(m_process, &QProcess::readyReadStandardOutput, this, &PythonRunner::onStdout);
-    connect(m_process, &QProcess::readyReadStandardError,  this, &PythonRunner::onStderr);
+    connect(m_process, &QProcess::readyReadStandardError, this, &PythonRunner::onStderr);
 
-    const QStringList args = { u"-u"_s, bridge, m_socketName, userScript };
+    const QStringList args = {u"-u"_s, bridge, m_socketName, userScript};
     m_process->start(python, args);
 
     if (!m_process->waitForStarted(5000)) {
@@ -197,9 +200,9 @@ bool PythonRunner::isRunning() const
 QString PythonRunner::findPython()
 {
 #ifdef Q_OS_WIN
-    const QStringList names = { u"python3.exe"_s, u"python.exe"_s };
+    const QStringList names = {u"python3.exe"_s, u"python.exe"_s};
 #else
-    const QStringList names = { u"python3"_s, u"python"_s };
+    const QStringList names = {u"python3"_s, u"python"_s};
 #endif
 
     QDir dir(QCoreApplication::applicationDirPath());
@@ -227,7 +230,7 @@ QString PythonRunner::findPython()
     }
 
 #ifndef Q_OS_WIN
-    const QStringList systemDirs = { u"/usr/bin"_s, u"/usr/local/bin"_s, u"/opt/homebrew/bin"_s };
+    const QStringList systemDirs = {u"/usr/bin"_s, u"/usr/local/bin"_s, u"/opt/homebrew/bin"_s};
     for (const QString &dir2 : systemDirs) {
         for (const QString &name : names) {
             const QString candidate = dir2 + u"/"_s + name;
@@ -247,9 +250,7 @@ QString PythonRunner::bridgeScriptPath() const
     if (QFileInfo::exists(candidate1))
         return candidate1;
 
-    const QString located = QStandardPaths::locate(
-        QStandardPaths::GenericDataLocation,
-        u"kirigami-workbench/workbench_bridge.py"_s);
+    const QString located = QStandardPaths::locate(QStandardPaths::GenericDataLocation, u"kirigami-workbench/workbench_bridge.py"_s);
     if (!located.isEmpty())
         return located;
 

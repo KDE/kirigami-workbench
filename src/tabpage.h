@@ -22,9 +22,18 @@ public:
     void save();
     bool isModified() const;
 
-    QString filePath() const { return m_filePath; }
-    KTextEditor::Document *document() const { return m_document; }
-    KTextEditor::View *editorView() const { return m_editorView; }
+    QString filePath() const
+    {
+        return m_filePath;
+    }
+    KTextEditor::Document *document() const
+    {
+        return m_document;
+    }
+    KTextEditor::View *editorView() const
+    {
+        return m_editorView;
+    }
 
 Q_SIGNALS:
     void modifiedChanged(bool modified);

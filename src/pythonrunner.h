@@ -21,7 +21,10 @@ public:
     void stop();
     bool isRunning() const;
 
-    QLocalSocket *socket() const { return m_socket; }
+    QLocalSocket *socket() const
+    {
+        return m_socket;
+    }
 
     static QString findPython();
 
@@ -47,8 +50,8 @@ private:
     QString bridgeScriptPath() const;
     QString uniqueSocketName() const;
 
-    QProcess      *m_process = nullptr;
-    QLocalServer  *m_server  = nullptr;
-    QLocalSocket  *m_socket  = nullptr;
-    QString        m_socketName;
+    QProcess *m_process = nullptr;
+    QLocalServer *m_server = nullptr;
+    QLocalSocket *m_socket = nullptr;
+    QString m_socketName;
 };

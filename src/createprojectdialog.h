@@ -24,9 +24,7 @@ public:
      * @param exampleUiDir   Absolute path to the example
      * @param parent         Parent widget
      */
-    explicit CreateProjectDialog(const QString &exampleName,
-                                 const QString &exampleUiDir,
-                                 QWidget *parent = nullptr);
+    explicit CreateProjectDialog(const QString &exampleName, const QString &exampleUiDir, QWidget *parent = nullptr);
 
 Q_SIGNALS:
     /**

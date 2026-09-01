@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import os

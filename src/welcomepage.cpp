@@ -4,6 +4,8 @@
 #include "welcomepage.h"
 #include "examplemodel.h"
 
+#include <KLocalizedString>
+
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -54,9 +56,7 @@ public:
         small.setPointSizeF(small.pointSizeF() * 0.85);
         painter->setFont(small);
         painter->setPen(option.palette.color(QPalette::Active, dimRole));
-        painter->drawText(QRect(r.left(), r.top() + r.height() / 2, r.width(), r.height() / 2),
-                          Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine,
-                          sub);
+        painter->drawText(QRect(r.left(), r.top() + r.height() / 2, r.width(), r.height() / 2), Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, sub);
 
         painter->restore();
     }
@@ -180,8 +180,8 @@ void WelcomePage::setupConnections()
 
         menu.addSeparator();
 
-        QAction *createAction = menu.addAction(QIcon::fromTheme(u"project-development-new-template"_s),
-                                               i18nc("@action:inmenu", "Create Project from Example\u2026"));
+        QAction *createAction =
+            menu.addAction(QIcon::fromTheme(u"project-development-new-template"_s), i18nc("@action:inmenu", "Create Project from Example\u2026"));
         createAction->setToolTip(i18nc("@info:tooltip", "Scaffold a new KDE project using this example's QML as the starting point."));
         connect(createAction, &QAction::triggered, this, [this, pluginId]() {
             Q_EMIT createProjectRequested(pluginId);

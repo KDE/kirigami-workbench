@@ -1,0 +1,11 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Kirigami Workbench
+Source: https://invent.kde.org/sdk/kirigami-workbench
+
+Files: examples/*/metadata.json src/packagestructure/*.json
+Copyright: 2026 Shubham Shinde <shubshinde8381@gmail.com>
+License: CC0-1.0
+
+Files: src/kirigami-workbenchui.rc
+Copyright: 2026 Shubham Shinde <shubshinde8381@gmail.com>
+License: CC0-1.0

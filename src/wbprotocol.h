@@ -19,22 +19,22 @@
 namespace WbProtocol
 {
 
-constexpr quint32 MSG_READY         = 0x01;
-constexpr quint32 MSG_FRAME         = 0x02;
-constexpr quint32 MSG_ERROR         = 0x03;
-constexpr quint32 MSG_STDOUT        = 0x04;
-constexpr quint32 MSG_STDERR        = 0x05;
+constexpr quint32 MSG_READY = 0x01;
+constexpr quint32 MSG_FRAME = 0x02;
+constexpr quint32 MSG_ERROR = 0x03;
+constexpr quint32 MSG_STDOUT = 0x04;
+constexpr quint32 MSG_STDERR = 0x05;
 
-constexpr quint32 MSG_RESIZE        = 0x10;
-constexpr quint32 MSG_MOUSE_PRESS   = 0x11;
+constexpr quint32 MSG_RESIZE = 0x10;
+constexpr quint32 MSG_MOUSE_PRESS = 0x11;
 constexpr quint32 MSG_MOUSE_RELEASE = 0x12;
-constexpr quint32 MSG_MOUSE_MOVE    = 0x13;
-constexpr quint32 MSG_KEY_PRESS     = 0x14;
-constexpr quint32 MSG_KEY_RELEASE   = 0x15;
-constexpr quint32 MSG_STOP          = 0x16;
+constexpr quint32 MSG_MOUSE_MOVE = 0x13;
+constexpr quint32 MSG_KEY_PRESS = 0x14;
+constexpr quint32 MSG_KEY_RELEASE = 0x15;
+constexpr quint32 MSG_STOP = 0x16;
 
 constexpr quint8 FMT_RGBA8888 = 0x01;
-constexpr quint8 FMT_JPEG     = 0x02;
+constexpr quint8 FMT_JPEG = 0x02;
 
 constexpr int HEADER_SIZE = 8;
 
@@ -74,8 +74,7 @@ inline QByteArray makeKeyEvent(quint32 type, int key, int modifiers, const QStri
     QDataStream ds(&pl, QIODevice::WriteOnly);
     ds.setByteOrder(QDataStream::BigEndian);
     const QByteArray utf8 = text.toUtf8();
-    ds << static_cast<qint32>(key) << static_cast<qint32>(modifiers)
-       << static_cast<quint32>(utf8.size());
+    ds << static_cast<qint32>(key) << static_cast<qint32>(modifiers) << static_cast<quint32>(utf8.size());
     pl.append(utf8);
     return makeMessage(type, pl);
 }
@@ -98,7 +97,7 @@ inline FramePayload parseFrame(const QByteArray &payload)
     quint8 fmt;
     quint32 dataLen;
     ds >> w >> h >> fmt >> dataLen;
-    f.width  = w;
+    f.width = w;
     f.height = h;
     f.format = fmt;
     if (static_cast<int>(dataLen) <= payload.size() - 13)

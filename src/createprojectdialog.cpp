@@ -28,19 +28,17 @@
 using namespace Qt::StringLiterals;
 
 static const QList<QPair<QString, QString>> s_knownTemplates = {
-    {u"kirigami6"_s,               u"Kirigami Application (Qt6)"_s},
-    {u"kirigamiaddons6"_s,         u"Advanced Kirigami Application (Qt6)"_s},
-    {u"kde-frameworks6-simple"_s,  u"KDE Frameworks 6 (Simple)"_s},
-    {u"kde-frameworks6"_s,         u"KDE Frameworks 6 (Full)"_s},
-    {u"kioworker6"_s,              u"KIO Worker (KF6)"_s},
-    {u"kparts6-app"_s,             u"KParts Application (KF6)"_s},
-    {u"ktexteditor6-plugin"_s,     u"KTextEditor Plugin (KF6)"_s},
-    {u"librarymanager6"_s,         u"Multimedia Manager with Kirigami (Qt6)"_s},
+    {u"kirigami6"_s, u"Kirigami Application (Qt6)"_s},
+    {u"kirigamiaddons6"_s, u"Advanced Kirigami Application (Qt6)"_s},
+    {u"kde-frameworks6-simple"_s, u"KDE Frameworks 6 (Simple)"_s},
+    {u"kde-frameworks6"_s, u"KDE Frameworks 6 (Full)"_s},
+    {u"kioworker6"_s, u"KIO Worker (KF6)"_s},
+    {u"kparts6-app"_s, u"KParts Application (KF6)"_s},
+    {u"ktexteditor6-plugin"_s, u"KTextEditor Plugin (KF6)"_s},
+    {u"librarymanager6"_s, u"Multimedia Manager with Kirigami (Qt6)"_s},
 };
 
-CreateProjectDialog::CreateProjectDialog(const QString &exampleName,
-                                         const QString &exampleUiDir,
-                                         QWidget *parent)
+CreateProjectDialog::CreateProjectDialog(const QString &exampleName, const QString &exampleUiDir, QWidget *parent)
     : QDialog(parent)
     , m_exampleName(exampleName)
     , m_exampleUiDir(exampleUiDir)
@@ -105,8 +103,9 @@ void CreateProjectDialog::setupFormPage()
 
     m_nameEdit = new QLineEdit(m_generator->name(), projectGroup);
     m_nameEdit->setPlaceholderText(i18nc("@info:placeholder", "e.g. MyKirigamiApp"));
-    m_nameEdit->setToolTip(i18n("Application name used as directory name and in source files.\n"
-                                 "Use CamelCase without spaces (e.g. MyApp)."));
+    m_nameEdit->setToolTip(
+        i18n("Application name used as directory name and in source files.\n"
+             "Use CamelCase without spaces (e.g. MyApp)."));
     formLayout->addRow(i18nc("@label:textbox", "Name:"), m_nameEdit);
 
     auto *locationRow = new QWidget(projectGroup);
@@ -151,8 +150,9 @@ void CreateProjectDialog::setupFormPage()
     templateLayout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
     m_templateCombo = new QComboBox(templateGroup);
-    m_templateCombo->setToolTip(i18n("C++ KDE project template used for scaffolding.\n"
-                                      "Requires kapptemplate to be installed."));
+    m_templateCombo->setToolTip(
+        i18n("C++ KDE project template used for scaffolding.\n"
+             "Requires kapptemplate to be installed."));
 
     const QStringList available = ProjectGenerator::availableTemplates();
     bool anyAdded = false;
@@ -166,15 +166,18 @@ void CreateProjectDialog::setupFormPage()
     for (const QString &tmpl : available) {
         bool known = false;
         for (const auto &[id, label] : s_knownTemplates) {
-            if (id == tmpl) { known = true; break; }
+            if (id == tmpl) {
+                known = true;
+                break;
+            }
         }
         if (!known)
             m_templateCombo->addItem(tmpl, tmpl);
     }
 
-    m_noTemplatesLabel = new QLabel(
-        i18n("<b>No templates found.</b> Install <a href=\"https://apps.kde.org/kapptemplate\">kapptemplate</a> to enable project creation."),
-        templateGroup);
+    m_noTemplatesLabel =
+        new QLabel(i18n("<b>No templates found.</b> Install <a href=\"https://apps.kde.org/kapptemplate\">kapptemplate</a> to enable project creation."),
+                   templateGroup);
     m_noTemplatesLabel->setOpenExternalLinks(true);
     m_noTemplatesLabel->setWordWrap(true);
     m_noTemplatesLabel->setVisible(!anyAdded);
@@ -238,9 +241,7 @@ void CreateProjectDialog::setupResultPage()
 
 void CreateProjectDialog::browseLocation()
 {
-    const QString dir = QFileDialog::getExistingDirectory(this,
-                                                          i18nc("@title:window", "Choose Output Directory"),
-                                                          m_locationEdit->text());
+    const QString dir = QFileDialog::getExistingDirectory(this, i18nc("@title:window", "Choose Output Directory"), m_locationEdit->text());
     if (!dir.isEmpty())
         m_locationEdit->setText(dir);
 }
@@ -285,14 +286,11 @@ void CreateProjectDialog::onGenerationDone(const QString &summary)
 
     m_copiedQmlFiles = copyExampleQml(m_generatedDest);
 
-    m_resultIcon->setPixmap(
-        style()->standardIcon(QStyle::SP_DialogApplyButton).pixmap(32, 32));
+    m_resultIcon->setPixmap(style()->standardIcon(QStyle::SP_DialogApplyButton).pixmap(32, 32));
 
     QString fullSummary = summary;
     if (!m_copiedQmlFiles.isEmpty()) {
-        fullSummary += u"<br /><br />"_s
-            + i18n("The example QML files have been copied to <tt>%1/src/</tt>.", m_generatedDest)
-            + u"<br />"_s
+        fullSummary += u"<br /><br />"_s + i18n("The example QML files have been copied to <tt>%1/src/</tt>.", m_generatedDest) + u"<br />"_s
             + i18n("Click <b>Open in Workbench</b> to start editing them.");
     }
 
@@ -305,8 +303,7 @@ void CreateProjectDialog::onGenerationDone(const QString &summary)
 
 void CreateProjectDialog::onGenerationError(const QString &errorMessage)
 {
-    m_resultIcon->setPixmap(
-        style()->standardIcon(QStyle::SP_MessageBoxCritical).pixmap(32, 32));
+    m_resultIcon->setPixmap(style()->standardIcon(QStyle::SP_MessageBoxCritical).pixmap(32, 32));
     m_resultBrowser->setHtml(u"<b>"_s + i18n("Error") + u"</b><br />"_s + errorMessage.toHtmlEscaped());
     m_stack->setCurrentIndex(2);
 }

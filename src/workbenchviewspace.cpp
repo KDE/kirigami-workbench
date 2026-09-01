@@ -1,4 +1,4 @@
-﻿// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
+// SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "workbenchviewspace.h"
@@ -10,6 +10,7 @@
 #include "tabpage.h"
 #include "workbenchtabbar.h"
 
+#include <KLocalizedString>
 #include <KPackage/Package>
 #include <KPackage/PackageLoader>
 #include <KTextEditor/Document>
@@ -127,8 +128,9 @@ void WorkbenchViewSpace::setupUI()
     m_fileModeLabel = new QLabel(this);
     m_fileModeLabel->setVisible(false);
     m_fileModeLabel->setAlignment(Qt::AlignCenter);
-    m_fileModeLabel->setStyleSheet(u"QLabel { background: #1a3a1a; color: #7ec87e; "
-                                   "font-size: 10px; padding: 2px; }"_s);
+    m_fileModeLabel->setStyleSheet(
+        u"QLabel { background: #1a3a1a; color: #7ec87e; "
+        "font-size: 10px; padding: 2px; }"_s);
     fileListLayout->addWidget(m_fileModeLabel);
     fileListLayout->addWidget(m_fileList, 1);
 
@@ -283,11 +285,12 @@ TabPage *WorkbenchViewSpace::openFile(const QString &filePath)
         const QString tabPath = QFileInfo(tab->filePath()).canonicalFilePath();
         if (tabPath.compare(absolutePath,
 #ifdef Q_OS_WIN
-                Qt::CaseInsensitive
+                            Qt::CaseInsensitive
 #else
-                Qt::CaseSensitive
+                            Qt::CaseSensitive
 #endif
-            ) == 0) {
+                            )
+            == 0) {
             m_tabBar->setCurrentIndex(i);
             m_stack->setCurrentIndex(i);
             return tab;
@@ -481,8 +484,12 @@ void WorkbenchViewSpace::showFileListContextMenu(const QPoint &pos)
         if (!m_project)
             return;
         bool ok;
-        QString componentName =
-            QInputDialog::getText(this, i18nc("@title:window", "New Component"), i18nc("@label", "Component name (without .qml extension):"), QLineEdit::Normal, QString(), &ok);
+        QString componentName = QInputDialog::getText(this,
+                                                      i18nc("@title:window", "New Component"),
+                                                      i18nc("@label", "Component name (without .qml extension):"),
+                                                      QLineEdit::Normal,
+                                                      QString(),
+                                                      &ok);
         if (ok && !componentName.isEmpty()) {
             QString newFilePath = m_project->addSubComponent(componentName);
             if (!newFilePath.isEmpty()) {
@@ -606,13 +613,11 @@ KTextEditor::Document *WorkbenchViewSpace::getOrCreateDocument(const QString &fi
             if (isPyFile) {
                 const QString name = QFileInfo(savedPath).fileName();
                 const QString escaped = name.toHtmlEscaped();
-                m_consoleWidget->append(
-                    u"<span style='color:#888'>— "_s + escaped + u" saved —</span>"_s);
+                m_consoleWidget->append(u"<span style='color:#888'>— "_s + escaped + u" saved —</span>"_s);
                 if (m_pythonRunner && m_pythonRunner->isRunning())
                     runPython();
                 else if (!m_pythonEntryScript.isEmpty())
-                    m_consoleWidget->append(
-                        u"<span style='color:#888'>Press \u25B6 Run (Ctrl+F5) to execute.</span>"_s);
+                    m_consoleWidget->append(u"<span style='color:#888'>Press \u25B6 Run (Ctrl+F5) to execute.</span>"_s);
             } else {
                 reloadPreview();
                 if (isPythonMode() && m_pythonRunner && m_pythonRunner->isRunning())
@@ -807,9 +812,7 @@ void WorkbenchViewSpace::openExample(const QString &pluginId)
 
     for (const QString &fileName : qmlFiles) {
         const QString src = QDir(uiDir).filePath(fileName);
-        const QString destName = (fileName.compare(u"main.qml"_s, Qt::CaseInsensitive) == 0)
-            ? u"Main.qml"_s
-            : fileName;
+        const QString destName = (fileName.compare(u"main.qml"_s, Qt::CaseInsensitive) == 0) ? u"Main.qml"_s : fileName;
         const QString dst = QDir(workingDir).filePath(destName);
         if (QFile::exists(dst))
             QFile::remove(dst);
@@ -830,9 +833,7 @@ void WorkbenchViewSpace::openExample(const QString &pluginId)
 
     QString mainDest;
     for (const QString &fileName : qmlFiles) {
-        const QString destName = (fileName.compare(u"main.qml"_s, Qt::CaseInsensitive) == 0)
-            ? u"Main.qml"_s
-            : fileName;
+        const QString destName = (fileName.compare(u"main.qml"_s, Qt::CaseInsensitive) == 0) ? u"Main.qml"_s : fileName;
         const QString dst = QDir(workingDir).filePath(destName);
         const QString absDst = QFileInfo(dst).absoluteFilePath();
 
@@ -919,8 +920,8 @@ void WorkbenchViewSpace::openFolder(const QString &dirPath)
 
     auto findMainQml = [&](const QString &root) -> QString {
         const QStringList candidates = {
-            root + u"/src/main.qml"_s,          
-            root + u"/main.qml"_s, 
+            root + u"/src/main.qml"_s,
+            root + u"/main.qml"_s,
             root + u"/Main.qml"_s,
             root + u"/src/contents/ui/main.qml"_s,
             root + u"/src/contents/ui/Main.qml"_s,
@@ -948,7 +949,7 @@ void WorkbenchViewSpace::openFolder(const QString &dirPath)
                 return p;
         }
 
-        for (const QString &subdir : { root, root + u"/src"_s }) {
+        for (const QString &subdir : {root, root + u"/src"_s}) {
             const QStringList py = QDir(subdir).entryList({u"*.py"_s}, QDir::Files);
             if (!py.isEmpty())
                 return QDir(subdir).filePath(py.first());
@@ -967,7 +968,6 @@ void WorkbenchViewSpace::openFolder(const QString &dirPath)
         }
         Q_EMIT pythonModeChanged(true);
     } else {
-
         m_previewStack->setCurrentIndex(0);
         Q_EMIT pythonModeChanged(false);
     }
@@ -997,24 +997,19 @@ void WorkbenchViewSpace::runPython()
 
         connect(m_pythonRunner, &PythonRunner::outputLine, this, [this](const QString &line) {
             if (!line.isEmpty())
-                m_consoleWidget->append(u"<span style='color:#a8d8a8'>"_s
-                                        + line.toHtmlEscaped() + u"</span>"_s);
+                m_consoleWidget->append(u"<span style='color:#a8d8a8'>"_s + line.toHtmlEscaped() + u"</span>"_s);
         });
 
         connect(m_pythonRunner, &PythonRunner::errorLine, this, [this](const QString &line) {
             if (!line.isEmpty()) {
-                const QString color = m_consoleWidget->palette()
-                    .color(QPalette::Active, QPalette::HighlightedText).name();
-                m_consoleWidget->append(u"<span style='color:"_s + color
-                                        + u"'>error: </span>"_s + line.toHtmlEscaped());
+                const QString color = m_consoleWidget->palette().color(QPalette::Active, QPalette::HighlightedText).name();
+                m_consoleWidget->append(u"<span style='color:"_s + color + u"'>error: </span>"_s + line.toHtmlEscaped());
             }
         });
 
         connect(m_pythonRunner, &PythonRunner::error, this, [this](const QString &msg) {
-            const QString color = m_consoleWidget->palette()
-                .color(QPalette::Active, QPalette::HighlightedText).name();
-            m_consoleWidget->append(u"<span style='color:"_s + color
-                + u"'>"_s + msg.toHtmlEscaped().replace(u"\n"_s, u"<br>"_s) + u"</span>"_s);
+            const QString color = m_consoleWidget->palette().color(QPalette::Active, QPalette::HighlightedText).name();
+            m_consoleWidget->append(u"<span style='color:"_s + color + u"'>"_s + msg.toHtmlEscaped().replace(u"\n"_s, u"<br>"_s) + u"</span>"_s);
             if (m_pythonPreview)
                 m_pythonPreview->showError(msg);
         });

@@ -218,13 +218,13 @@ void WorkbenchTabBar::updateCloseButtonPositions()
 {
     const QPalette &pal = palette();
     const QColor highlightColor = pal.color(QPalette::Highlight);
-    const QString activeStyle = u"QToolButton { border:none; border-radius:2px; background-color:%1; padding:0px; }"
-                                u"QToolButton:pressed { background-color:%2; }"_s
-                                    .arg(highlightColor.name(), highlightColor.darker(120).name());
-    const QString inactiveStyle = u"QToolButton { border:none; border-radius:2px; background-color:%1; padding:0px; }"
-                                  u"QToolButton:hover { background-color:%2; }"
-                                  u"QToolButton:pressed { background-color:%3; }"_s
-                                      .arg(pal.color(QPalette::Button).name(), highlightColor.name(), highlightColor.darker(120).name());
+    const QString activeStyle =
+        u"QToolButton { border:none; border-radius:2px; background-color:%1; padding:0px; }"
+        u"QToolButton:pressed { background-color:%2; }"_s.arg(highlightColor.name(), highlightColor.darker(120).name());
+    const QString inactiveStyle =
+        u"QToolButton { border:none; border-radius:2px; background-color:%1; padding:0px; }"
+        u"QToolButton:hover { background-color:%2; }"
+        u"QToolButton:pressed { background-color:%3; }"_s.arg(pal.color(QPalette::Button).name(), highlightColor.name(), highlightColor.darker(120).name());
 
     for (int i = 0; i < m_closeButtons.size() && i < count(); ++i) {
         const int btnSize = closeBtnSize();

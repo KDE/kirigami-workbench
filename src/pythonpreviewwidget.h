@@ -53,15 +53,19 @@ private:
     void handleMessage(quint32 type, const QByteArray &payload);
     void sendResize();
 
-    PythonRunner  *m_runner = nullptr;
-    QLocalSocket  *m_socket = nullptr;
+    PythonRunner *m_runner = nullptr;
+    QLocalSocket *m_socket = nullptr;
 
-    QImage   m_frame;
+    QImage m_frame;
     QByteArray m_readBuffer;
 
-    QString  m_placeholderText;
-    QString  m_errorText;
+    QString m_placeholderText;
+    QString m_errorText;
 
-    enum class State { Idle, Running, Error };
+    enum class State {
+        Idle,
+        Running,
+        Error
+    };
     State m_state = State::Idle;
 };

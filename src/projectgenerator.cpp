@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2026 Shubham Shinde <shubshinde8381@gmail.com>
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "projectgenerator.h"
 
@@ -32,9 +32,7 @@ using namespace Qt::StringLiterals;
 
 static QStringList templateSearchDirs()
 {
-    return QStandardPaths::locateAll(QStandardPaths::GenericDataLocation,
-                                     u"kdevappwizard/templates/"_s,
-                                     QStandardPaths::LocateDirectory);
+    return QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, u"kdevappwizard/templates/"_s, QStandardPaths::LocateDirectory);
 }
 
 ProjectGenerator::ProjectGenerator(QObject *parent)
@@ -64,11 +62,26 @@ void ProjectGenerator::saveSettings() const
     grp.sync();
 }
 
-QString ProjectGenerator::name() const { return m_name; }
-QString ProjectGenerator::location() const { return m_location; }
-QString ProjectGenerator::authorName() const { return m_authorName; }
-QString ProjectGenerator::authorEmail() const { return m_authorEmail; }
-QString ProjectGenerator::version() const { return m_version; }
+QString ProjectGenerator::name() const
+{
+    return m_name;
+}
+QString ProjectGenerator::location() const
+{
+    return m_location;
+}
+QString ProjectGenerator::authorName() const
+{
+    return m_authorName;
+}
+QString ProjectGenerator::authorEmail() const
+{
+    return m_authorEmail;
+}
+QString ProjectGenerator::version() const
+{
+    return m_version;
+}
 
 void ProjectGenerator::setName(const QString &name)
 {
@@ -122,10 +135,7 @@ QStringList ProjectGenerator::availableTemplates()
     return result;
 }
 
-bool ProjectGenerator::unpackArchive(const KArchiveDirectory *dir,
-                                     const QString &dest,
-                                     const QStringList &skipList,
-                                     bool firstCall)
+bool ProjectGenerator::unpackArchive(const KArchiveDirectory *dir, const QString &dest, const QStringList &skipList, bool firstCall)
 {
     qCDebug(WORKBENCH_GENERATOR) << "unpacking dir:" << dir->name() << "to" << dest;
 
@@ -172,9 +182,10 @@ bool ProjectGenerator::unpackArchive(const KArchiveDirectory *dir,
 
             const QString destName = KMacroExpander::expandMacros(dest + u"/"_s + file->name(), m_variables);
             if (QFile::exists(destName)) {
-                Q_EMIT errorOccurred(i18n("Could not copy template file to %1, because the file already exists. "
-                                          "The project has not been generated and all temporary files will be removed.",
-                                          destName));
+                Q_EMIT errorOccurred(
+                    i18n("Could not copy template file to %1, because the file already exists. "
+                         "The project has not been generated and all temporary files will be removed.",
+                         destName));
                 failed = true;
                 break;
             }
@@ -183,9 +194,10 @@ bool ProjectGenerator::unpackArchive(const KArchiveDirectory *dir,
                 m_newFiles.append(destName);
                 const auto mimeType = mimeDb.mimeTypeForFile(destName);
                 if (mimeType.inherits(u"text/plain"_s) && !extractFileMacros(destName)) {
-                    Q_EMIT errorOccurred(i18n("Failed to integrate your project information into the file %1. "
-                                              "The project has not been generated and all temporary files will be removed.",
-                                              destName));
+                    Q_EMIT errorOccurred(
+                        i18n("Failed to integrate your project information into the file %1. "
+                             "The project has not been generated and all temporary files will be removed.",
+                             destName));
                     failed = true;
                     break;
                 }
@@ -240,9 +252,10 @@ void ProjectGenerator::startGeneration(const QString &templateName, const QStrin
     const QStringList results = KFileUtils::findAllUniqueFiles(templatePaths, {templateName + u".*"_s});
 
     if (results.isEmpty()) {
-        Q_EMIT errorOccurred(i18n("Could not load template archive for \"%1\". "
-                                  "Make sure kapptemplate is installed.",
-                                  displayName));
+        Q_EMIT errorOccurred(
+            i18n("Could not load template archive for \"%1\". "
+                 "Make sure kapptemplate is installed.",
+                 displayName));
         return;
     }
 
@@ -315,10 +328,14 @@ void ProjectGenerator::startGeneration(const QString &templateName, const QStrin
         return;
     }
 
-    const QString summary = i18n("Your project <b>%1</b> was created based on the <b>%2</b> template.<br />"
-                                  "Version: %3<br /><br />"
-                                  "Location: %4<br /><br />"
-                                  "Open the project folder to get started.",
-                                  appName, displayName, m_version, dest);
+    const QString summary = i18n(
+        "Your project <b>%1</b> was created based on the <b>%2</b> template.<br />"
+        "Version: %3<br /><br />"
+        "Location: %4<br /><br />"
+        "Open the project folder to get started.",
+        appName,
+        displayName,
+        m_version,
+        dest);
     Q_EMIT done(summary);
 }

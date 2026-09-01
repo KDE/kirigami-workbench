@@ -55,7 +55,10 @@ public:
 
     void runPython();
     void stopPython();
-    bool isPythonMode() const { return !m_pythonEntryScript.isEmpty(); }
+    bool isPythonMode() const
+    {
+        return !m_pythonEntryScript.isEmpty();
+    }
 
     void setGalleryVisible(bool visible);
     bool isGalleryVisible() const;
