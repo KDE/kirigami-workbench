@@ -12,6 +12,7 @@ class GalleryPanel;
 class TabPage;
 class PythonRunner;
 class PythonPreviewWidget;
+class QLabel;
 class QGridLayout;
 class QSplitter;
 class QStackedWidget;

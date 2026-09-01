@@ -13,3 +13,12 @@ path = [
 ]
 SPDX-FileCopyrightText = "2024 Joshua Goins <josh@redstrate.com>"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = [
+    "examples/**",
+    "src/packagestructure/*.json",
+    "src/kirigami-workbenchui.rc",
+]
+SPDX-FileCopyrightText = "2026 Shubham Shinde <shubshinde8381@gmail.com>"
+SPDX-License-Identifier = "CC0-1.0"
